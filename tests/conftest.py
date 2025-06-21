@@ -2,7 +2,7 @@
 
 import asyncio
 import os
-from typing import AsyncGenerator, Generator
+from collections.abc import AsyncGenerator, Generator
 from unittest.mock import AsyncMock, Mock
 
 import pytest
@@ -11,11 +11,11 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 from server.main import create_app
-from server.core.config import settings
 
 # Set test environment
 os.environ["ENVIRONMENT"] = "test"
 os.environ["REDIS_URL"] = "redis://localhost:6379/15"  # Use different DB for tests
+os.environ["ALLOWED_IPS"] = "127.0.0.1,::1,testclient,unknown,0.0.0.0/0"  # Allow test client IPs
 
 
 @pytest.fixture(scope="session")
@@ -74,7 +74,7 @@ def mock_zoho_oauth():
 def mock_zoho_api():
     """Mock Zoho API client."""
     mock = Mock()
-    
+
     # Mock API responses
     mock.get = AsyncMock(return_value={
         "tasks": [
@@ -89,7 +89,7 @@ def mock_zoho_api():
             }
         ]
     })
-    
+
     mock.post = AsyncMock(return_value={
         "task": {
             "id": "new_task_123",
@@ -97,11 +97,11 @@ def mock_zoho_api():
             "link": {"self": {"url": "https://test.com/task/123"}}
         }
     })
-    
+
     mock.put = AsyncMock(return_value={"status": "updated"})
     mock.delete = AsyncMock(return_value={"status": "deleted"})
     mock.health_check = AsyncMock(return_value=True)
-    
+
     return mock
 
 
@@ -161,7 +161,7 @@ def auth_headers(jwt_token):
 # Test data factories
 class TaskFactory:
     """Factory for creating test task data."""
-    
+
     @staticmethod
     def create(
         task_id: str = "test_task_001",
@@ -184,7 +184,7 @@ class TaskFactory:
 
 class FileFactory:
     """Factory for creating test file data."""
-    
+
     @staticmethod
     def create(
         file_id: str = "test_file_001",

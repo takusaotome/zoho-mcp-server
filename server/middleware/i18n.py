@@ -1,29 +1,28 @@
 """Internationalization middleware for Zoho MCP Server."""
 
 import logging
-from typing import Dict, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from fastapi import Request
-from babel import Locale
 from babel.support import Translations
+from fastapi import Request
 
 logger = logging.getLogger(__name__)
 
 
 class I18nManager:
     """Internationalization manager for handling multiple languages."""
-    
+
     def __init__(self) -> None:
         """Initialize i18n manager."""
         self.supported_locales = ["en", "ja"]
         self.default_locale = "en"
         self.translations: Dict[str, Optional[Translations]] = {}
-        
+
         # Initialize translations
         self._load_translations()
-        
+
         logger.info(f"I18n manager initialized with locales: {self.supported_locales}")
-    
+
     def _load_translations(self) -> None:
         """Load translation files."""
         for locale_code in self.supported_locales:
@@ -35,13 +34,13 @@ class I18nManager:
             except Exception as e:
                 logger.warning(f"Failed to load translations for {locale_code}: {e}")
                 self.translations[locale_code] = None
-    
+
     def get_locale_from_request(self, request: Request) -> str:
         """Extract locale from request.
-        
+
         Args:
             request: FastAPI request
-            
+
         Returns:
             Locale code
         """
@@ -49,7 +48,7 @@ class I18nManager:
         locale = request.query_params.get("locale")
         if locale and self._is_supported_locale(locale):
             return locale
-        
+
         # Check Accept-Language header
         accept_language = request.headers.get("Accept-Language", "")
         if accept_language:
@@ -60,38 +59,38 @@ class I18nManager:
                 lang_code = lang.split("-")[0]
                 if self._is_supported_locale(lang_code):
                     return lang_code
-        
+
         return self.default_locale
-    
+
     def _is_supported_locale(self, locale: str) -> bool:
         """Check if locale is supported.
-        
+
         Args:
             locale: Locale code to check
-            
+
         Returns:
             True if supported
         """
         return locale.lower() in self.supported_locales
-    
-    def translate(self, message: str, locale: str = None) -> str:
+
+    def translate(self, message: str, locale: Optional[str] = None) -> str:
         """Translate message to specified locale.
-        
+
         Args:
             message: Message to translate
             locale: Target locale
-            
+
         Returns:
             Translated message
         """
         if not locale:
             locale = self.default_locale
-        
+
         # For now, return predefined translations
         translations = {
             "en": {
                 "task_created": "Task created successfully",
-                "task_updated": "Task updated successfully", 
+                "task_updated": "Task updated successfully",
                 "task_not_found": "Task not found",
                 "file_uploaded": "File uploaded successfully",
                 "file_not_found": "File not found",
@@ -105,35 +104,35 @@ class I18nManager:
                 "task_updated": "タスクが正常に更新されました",
                 "task_not_found": "タスクが見つかりません",
                 "file_uploaded": "ファイルが正常にアップロードされました",
-                "file_not_found": "ファイルが見つかりません", 
+                "file_not_found": "ファイルが見つかりません",
                 "invalid_parameters": "無効なパラメータです",
                 "internal_error": "内部サーバーエラー",
                 "access_denied": "アクセスが拒否されました",
                 "rate_limit_exceeded": "レート制限を超過しました"
             }
         }
-        
+
         locale_translations = translations.get(locale, translations[self.default_locale])
         return locale_translations.get(message, message)
-    
+
     def format_response_message(
         self,
         message_key: str,
-        locale: str = None,
-        **kwargs
+        locale: Optional[str] = None,
+        **kwargs: Any
     ) -> str:
         """Format response message with parameters.
-        
+
         Args:
             message_key: Message key to translate
             locale: Target locale
             **kwargs: Format parameters
-            
+
         Returns:
             Formatted message
         """
         translated = self.translate(message_key, locale)
-        
+
         try:
             return translated.format(**kwargs) if kwargs else translated
         except Exception as e:

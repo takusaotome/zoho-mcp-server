@@ -1,17 +1,20 @@
 """FastAPI application for Zoho MCP Server."""
 
 import logging
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
-from server.core.config import settings
-from server.middleware.rate_limit import RateLimitMiddleware
 from server.auth.ip_allowlist import IPAllowlistMiddleware
+from server.auth.jwt_handler import jwt_handler, TokenData
+from server.core.config import settings
 from server.core.mcp_handler import MCPHandler
+from server.handlers.webhooks import WebhookHandler
+from server.middleware.rate_limit import RateLimitMiddleware
 
 # Configure logging
 logging.basicConfig(
@@ -19,6 +22,9 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+# Initialize security scheme
+security = HTTPBearer()
 
 
 @asynccontextmanager
@@ -28,9 +34,9 @@ async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     logger.info("Starting Zoho MCP Server...")
     logger.info(f"Environment: {settings.environment}")
     logger.info(f"Debug mode: {settings.debug}")
-    
+
     yield
-    
+
     # Shutdown
     logger.info("Shutting down Zoho MCP Server...")
 
@@ -45,27 +51,43 @@ def create_app() -> FastAPI:
         redoc_url="/redoc" if settings.debug else None,
         lifespan=lifespan,
     )
-    
+
     # Add CORS middleware
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=settings.cors_origins,
+        allow_origins=settings.cors_origins.split(","),
         allow_credentials=settings.cors_credentials,
         allow_methods=["GET", "POST", "PUT", "DELETE"],
         allow_headers=["*"],
     )
-    
+
     # Add custom middleware
-    app.add_middleware(IPAllowlistMiddleware, allowed_ips=settings.allowed_ips)
+    app.add_middleware(IPAllowlistMiddleware, allowed_ips=settings.allowed_ips.split(","))
     app.add_middleware(
         RateLimitMiddleware,
         calls=settings.rate_limit_per_minute,
         period=60
     )
-    
-    # Initialize MCP handler
+
+    # Initialize handlers
     mcp_handler = MCPHandler()
-    
+    webhook_handler = WebhookHandler()
+
+    async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
+        """Get current authenticated user from JWT token."""
+        try:
+            token_data = jwt_handler.verify_token(credentials.credentials)
+            return token_data
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Authentication failed: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
     @app.get("/health")
     async def health_check() -> dict[str, str]:
         """Health check endpoint."""
@@ -74,12 +96,16 @@ def create_app() -> FastAPI:
             "version": "0.1.0",
             "environment": settings.environment
         }
-    
+
     @app.post("/mcp")
-    async def mcp_endpoint(request: Request) -> JSONResponse:
-        """MCP JSON-RPC endpoint."""
+    async def mcp_endpoint(
+        request: Request,
+        current_user: TokenData = Depends(get_current_user)
+    ) -> JSONResponse:
+        """MCP JSON-RPC endpoint with JWT authentication."""
         try:
             body = await request.json()
+            logger.info(f"MCP request from user: {current_user.sub}")
             response = await mcp_handler.handle_request(body)
             return JSONResponse(content=response)
         except Exception as e:
@@ -95,7 +121,7 @@ def create_app() -> FastAPI:
                     "id": body.get("id") if 'body' in locals() else None
                 }
             )
-    
+
     @app.get("/manifest.json")
     async def get_manifest() -> dict[str, object]:
         """Get MCP manifest with available tools."""
@@ -212,7 +238,27 @@ def create_app() -> FastAPI:
                 }
             ]
         }
-    
+
+    @app.post("/webhook/task-updated")
+    async def webhook_task_updated(request: Request) -> JSONResponse:
+        """Handle task updated webhook from Zoho."""
+        try:
+            body_data = await request.json()
+            result = await webhook_handler.process_webhook(
+                request=request,
+                event_type="task.updated",
+                event_data=body_data
+            )
+            return JSONResponse(content=result)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error(f"Webhook processing failed: {e}")
+            raise HTTPException(
+                status_code=500,
+                detail="Webhook processing failed"
+            )
+
     return app
 
 
