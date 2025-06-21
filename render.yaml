@@ -1,0 +1,53 @@
+services:
+  - type: web
+    name: zoho-mcp-server
+    runtime: python
+    plan: starter
+    region: oregon
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server.main:app --host 0.0.0.0 --port $PORT --workers 1
+    envVars:
+      - fromGroup: zoho-mcp-prod
+    healthCheckPath: /health
+    
+  - type: cron
+    name: zoho-mcp-daily-report
+    schedule: "0 9 * * *"  # 09:00 UTC daily
+    buildCommand: pip install -r requirements.txt
+    command: python -m server.scripts.daily_report
+    envVars:
+      - fromGroup: zoho-mcp-prod
+
+envVarGroups:
+  - name: zoho-mcp-prod
+    envVars:
+      - key: ENVIRONMENT
+        value: production
+      - key: LOG_LEVEL
+        value: INFO
+      - key: DEBUG
+        value: false
+      - key: ZOHO_CLIENT_ID
+        sync: false
+      - key: ZOHO_CLIENT_SECRET
+        sync: false
+      - key: ZOHO_REFRESH_TOKEN
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: PORTAL_ID
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: WEBHOOK_SECRET
+        sync: false
+      - key: ALLOWED_IPS
+        value: "0.0.0.0/0"  # Configure based on your VPN CIDR
+      - key: RATE_LIMIT_PER_MINUTE
+        value: "100"
+      - key: CORS_ORIGINS
+        value: "https://your-domain.com"
+      - key: ENABLE_METRICS
+        value: "true"
+      - key: ENABLE_WEBHOOKS
+        value: "true"
