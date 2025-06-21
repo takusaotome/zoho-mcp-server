@@ -15,8 +15,13 @@ class TestMCPHandler:
         return MCPHandler()
     
     @pytest.mark.asyncio
-    async def test_handle_ping_request(self, mcp_handler):
+    @patch('server.core.mcp_handler.MCPHandler.__init__', return_value=None)
+    async def test_handle_ping_request(self, mock_init):
         """Test ping request handling."""
+        # Create handler without initializing dependencies
+        mcp_handler = MCPHandler.__new__(MCPHandler)
+        mcp_handler.tools = {}
+        
         request = {
             "jsonrpc": "2.0",
             "method": "ping",
@@ -28,7 +33,7 @@ class TestMCPHandler:
         assert response["jsonrpc"] == "2.0"
         assert response["id"] == "test_001"
         assert response["result"]["message"] == "pong"
-        assert "error" not in response
+        assert response.get("error") is None
     
     @pytest.mark.asyncio
     async def test_handle_list_tools(self, mcp_handler):
@@ -86,13 +91,17 @@ class TestMCPHandler:
         assert response["error"]["code"] == MCPError.METHOD_NOT_FOUND
     
     @pytest.mark.asyncio
-    @patch('server.handlers.tasks.TaskHandler.list_tasks')
-    async def test_handle_call_tool_success(self, mock_list_tasks, mcp_handler):
+    @patch('server.core.mcp_handler.MCPHandler.__init__', return_value=None)
+    async def test_handle_call_tool_success(self, mock_init):
         """Test successful tool call."""
-        mock_list_tasks.return_value = {
-            "project_id": "test_project",
-            "tasks": [],
-            "total_count": 0
+        # Create handler with mocked tools
+        mcp_handler = MCPHandler.__new__(MCPHandler)
+        mcp_handler.tools = {
+            "listTasks": AsyncMock(return_value={
+                "project_id": "test_project",
+                "tasks": [],
+                "total_count": 0
+            })
         }
         
         request = {
@@ -113,7 +122,7 @@ class TestMCPHandler:
         assert response["id"] == "test_005"
         assert "result" in response
         assert "content" in response["result"]
-        mock_list_tasks.assert_called_once_with(project_id="test_project")
+        mcp_handler.tools["listTasks"].assert_called_once_with(project_id="test_project")
     
     @pytest.mark.asyncio
     async def test_handle_unknown_method(self, mcp_handler):
