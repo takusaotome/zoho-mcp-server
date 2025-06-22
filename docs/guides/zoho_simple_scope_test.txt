@@ -1,0 +1,28 @@
+最も簡単なスコープテスト
+
+=== 1つずつテスト ===
+
+テスト1 (基本):
+projects
+
+テスト2 (ZohoProjects):  
+ZohoProjects
+
+テスト3 (小文字):
+zoho.projects.read
+
+テスト4 (標準形式):
+ZohoProjects.projects.read
+
+テスト5 (タスク):
+ZohoProjects.tasks.read
+
+=== 推奨順序 ===
+
+1. まず「projects」だけを入力してテスト
+2. 成功したら「projects,tasks」に拡張
+3. 徐々にスコープを追加
+
+=== 空欄でテスト ===
+最終手段として、Scope欄を空欄にして
+Generate Codeが実行できるかテスト 

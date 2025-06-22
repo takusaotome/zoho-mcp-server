@@ -1,0 +1,32 @@
+🔐 reauth_required エラー - 即座に実行する手順
+
+=== 緊急対応 (5分で完了) ===
+
+1. 現在のブラウザタブをすべて閉じる
+
+2. シークレット/プライベートモードでブラウザを開く
+   - Chrome: Ctrl+Shift+N (Win) / Cmd+Shift+N (Mac)
+   - Firefox: Ctrl+Shift+P (Win) / Cmd+Shift+P (Mac)
+
+3. Zoho再ログイン
+   URL: https://accounts.zoho.com/
+   
+4. Developer Console再アクセス  
+   URL: https://api-console.zoho.com/
+
+5. Server-based Application作成を再試行
+
+=== アカウント確認事項 ===
+- 個人アカウント or 組織アカウント？
+- 管理者権限はある？
+- 2FA設定は正常？
+
+=== 別の方法（アカウント問題の場合） ===
+- 別のZohoアカウントを使用
+- 組織の管理者に権限付与を依頼
+- Zoho無料アカウントを新規作成
+
+=== 成功確認 ===
+✅ Developer Console のホーム画面が表示される
+✅ "Create Application" ボタンが見える
+✅ エラーメッセージが消えている 

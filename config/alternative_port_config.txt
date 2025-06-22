@@ -1,0 +1,19 @@
+代替ポート設定 (3000番ポート使用)
+
+=== Zoho Developer Console 設定 ===
+
+Client Name:
+ZohoMCPServer3000
+
+Homepage URL:
+http://localhost:3000
+
+Authorized Redirect URIs:
+http://localhost:3000/auth/callback
+
+=== MCP Server起動コマンド (対応) ===
+uvicorn server.main:app --host 0.0.0.0 --port 3000 --reload
+
+=== .env ファイル更新 ===
+# 以下の行も変更が必要
+CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000 

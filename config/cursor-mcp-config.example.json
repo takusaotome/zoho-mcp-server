@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "zoho-mcp-server": {
+      "command": "python",
+      "args": ["-m", "uvicorn", "server.main:app", "--host", "127.0.0.1", "--port", "8000", "--reload"],
+      "env": {
+                 "PYTHONPATH": ".",
+        "ZOHO_CLIENT_ID": "YOUR_ZOHO_CLIENT_ID",
+        "ZOHO_CLIENT_SECRET": "YOUR_ZOHO_CLIENT_SECRET",
+        "ZOHO_REFRESH_TOKEN": "YOUR_ZOHO_REFRESH_TOKEN",
+        "ZOHO_PORTAL_ID": "YOUR_ZOHO_PORTAL_ID",
+        "JWT_SECRET": "YOUR_JWT_SECRET_32_CHARS_OR_MORE",
+        "REDIS_URL": "redis://127.0.0.1:6379",
+        "REDIS_SSL": "false",
+        "ALLOWED_IPS": "127.0.0.1,::1,localhost"
+      }
+    }
+  }
+} 

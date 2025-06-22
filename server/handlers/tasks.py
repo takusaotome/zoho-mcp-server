@@ -14,12 +14,12 @@ logger = logging.getLogger(__name__)
 class Task(BaseModel):
     """Task model."""
 
-    id: str
+    id: Union[str, int]
     name: str
-    status: str
+    status: Union[str, Dict[str, Any]]
     owner: Optional[str] = None
-    due_date: Optional[date] = None
-    created_at: Optional[datetime] = None
+    due_date: Optional[Union[str, date]] = None
+    created_at: Optional[Union[str, datetime]] = None
     description: Optional[str] = None
     url: Optional[str] = None
 
@@ -60,8 +60,10 @@ class TaskHandler:
         try:
             logger.info(f"Listing tasks for project {project_id}, status: {status}")
 
-            # Build API endpoint
-            endpoint = f"/projects/{project_id}/tasks/"
+            # Build API endpoint with portal ID
+            from server.core.config import settings
+            portal_id = settings.portal_id
+            endpoint = f"/portal/{portal_id}/projects/{project_id}/tasks/"
             params = {}
 
             if status:
@@ -78,11 +80,28 @@ class TaskHandler:
 
             for task_data in tasks_data:
                 try:
+                    # IDを文字列に変換
+                    task_id = str(task_data["id"])
+                    
+                    # ステータスを処理
+                    status_data = task_data.get("status", "open")
+                    if isinstance(status_data, dict):
+                        status = status_data.get("name", "Unknown")
+                    else:
+                        status = str(status_data)
+                    
+                    # オーナー情報を処理
+                    owner_data = task_data.get("owner", {})
+                    if isinstance(owner_data, dict):
+                        owner = owner_data.get("name")
+                    else:
+                        owner = str(owner_data) if owner_data else None
+                    
                     task = Task(
-                        id=task_data["id"],
+                        id=task_id,
                         name=task_data["name"],
-                        status=task_data.get("status", "open"),
-                        owner=task_data.get("owner", {}).get("name"),
+                        status=status,
+                        owner=owner,
                         due_date=task_data.get("due_date"),
                         created_at=task_data.get("created_time"),
                         description=task_data.get("description"),
@@ -91,6 +110,11 @@ class TaskHandler:
                     tasks.append(task.model_dump())
                 except ValidationError as e:
                     logger.warning(f"Invalid task data: {e}")
+                    logger.debug(f"Task data: {task_data}")
+                    continue
+                except Exception as e:
+                    logger.error(f"Error processing task data: {e}")
+                    logger.debug(f"Task data: {task_data}")
                     continue
 
             result = {
@@ -143,7 +167,9 @@ class TaskHandler:
                     raise ValueError(f"Invalid date format: {due_date}. Use YYYY-MM-DD")
 
             # Make API request with retry logic
-            endpoint = f"/projects/{project_id}/tasks/"
+            from server.core.config import settings
+            portal_id = settings.portal_id
+            endpoint = f"/portal/{portal_id}/projects/{project_id}/tasks/"
             response = await self.api_client.post(endpoint, json=payload, retry=True)
 
             # Extract task ID from response
@@ -213,7 +239,9 @@ class TaskHandler:
                 raise ValueError("No update fields provided")
 
             # Make API request
-            endpoint = f"/tasks/{task_id}/"
+            from server.core.config import settings
+            portal_id = settings.portal_id
+            endpoint = f"/portal/{portal_id}/tasks/{task_id}/"
             await self.api_client.put(endpoint, json=payload)
 
             result = {
@@ -242,13 +270,15 @@ class TaskHandler:
             logger.info(f"Getting details for task {task_id}")
 
             # Make API request
-            endpoint = f"/tasks/{task_id}/"
+            from server.core.config import settings
+            portal_id = settings.portal_id
+            endpoint = f"/portal/{portal_id}/tasks/{task_id}/"
             response = await self.api_client.get(endpoint)
 
             task_data = response.get("task", {})
 
             # Get additional details like comments and history
-            comments_endpoint = f"/tasks/{task_id}/comments/"
+            comments_endpoint = f"/portal/{portal_id}/tasks/{task_id}/comments/"
             try:
                 comments_response = await self.api_client.get(comments_endpoint)
                 comments = comments_response.get("comments", [])
@@ -307,7 +337,9 @@ class TaskHandler:
             completion_rate = (closed_tasks / total_tasks * 100) if total_tasks > 0 else 0
 
             # Get project details
-            project_endpoint = f"/projects/{project_id}/"
+            from server.core.config import settings
+            portal_id = settings.portal_id
+            project_endpoint = f"/portal/{portal_id}/projects/{project_id}/"
             try:
                 project_response = await self.api_client.get(project_endpoint)
                 project_data = project_response.get("project", {})

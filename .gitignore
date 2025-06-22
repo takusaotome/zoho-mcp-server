@@ -128,6 +128,25 @@ ENV/
 env.bak/
 venv.bak/
 
+# Configuration files with secrets
+cursor-mcp-config.json
+temp_jwt.env
+*.jwt.env
+*secret*.env
+
+# Files containing hardcoded credentials
+**/config/*secret*
+**/config/*jwt*
+**/config/*oauth*
+
+# Reports directory (contains sensitive project data)
+reports/exports/
+reports/configs/
+reports/*.json
+reports/*.md
+!reports/README.md
+*.private.*
+
 # Spyder project settings
 .spyderproject
 .spyproject
@@ -424,4 +443,6 @@ Session.vim
 *.elc
 auto-save-list
 tramp
-.\#*
+.\#*# Security scan results
+security_reports/*.json
+security_reports/*.html

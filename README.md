@@ -6,6 +6,34 @@ Model Context Protocol (MCP) server for Zoho Projects and WorkDrive integration.
 
 This server enables natural language interaction with Zoho applications through MCP-compatible clients like Cursor IDE and Claude. It provides secure access to Zoho Projects tasks and WorkDrive files via JSON-RPC protocol.
 
+## Project Structure
+
+```
+zoho-mcp-server/
+├── server/                 # Main application code
+├── tests/                  # Test suites
+├── docs/                   # Documentation & guides
+│   ├── requirement/        # Requirements documentation
+│   ├── plan/               # Project planning documents
+│   ├── design/             # Design documents
+│   └── guides/             # Setup guides & troubleshooting
+├── tools/                  # Development & utility scripts
+├── config/                 # Configuration files
+├── reports/                # Generated reports & project data
+└── temp/                   # Temporary files
+```
+
+### Directory Details
+
+- **`server/`** - Main application code (handlers, auth, storage, etc.)
+- **`tests/`** - Test suites (unit, integration, e2e, security)
+- **`docs/`** - Documentation and guides
+  - **`guides/`** - Setup guides and troubleshooting documentation
+- **`tools/`** - Development tools, test scripts, and utilities
+- **`config/`** - Configuration templates and settings
+- **`reports/`** - Generated task reports, project data, and exports (gitignored)
+- **`temp/`** - Temporary files (coverage reports, logs, etc.)
+
 ## Features
 
 ### Phase 1 (MVP)
@@ -43,13 +71,19 @@ pip install -r requirements-dev.txt
 
 3. Configure environment:
 ```bash
-cp .env.example .env
+cp config/env.example .env
 # Edit .env with your credentials
 ```
 
 4. Run the server:
 ```bash
 uvicorn server.main:app --reload
+```
+
+5. Test the setup:
+```bash
+python tools/check_configuration.py
+python tools/final_verification.py
 ```
 
 ## Configuration
@@ -67,12 +101,17 @@ uvicorn server.main:app --reload
 
 ### Zoho OAuth Setup
 
-1. Create a Zoho application in [Zoho Developer Console](https://api-console.zoho.com)
-2. Configure OAuth scopes:
-   - `ZohoProjects.tasks.ALL`
-   - `ZohoProjects.files.READ`
-   - `ZohoWorkDrive.files.ALL`
-3. Generate refresh token using server-based OAuth flow
+**🚀 推奨方法: Self Client** (簡単・高速)
+1. [Zoho API Console](https://api-console.zoho.com) の「Self Client」を選択
+2. 必要なスコープを設定 (10分で期限切れ)
+3. 生成されたコードを `python tools/exchange_auth_code.py [コード]` で変換
+
+**従来方法: Server-based Application** (複雑)
+1. Zoho Developer Console でアプリケーション作成
+2. OAuth設定とスコープ設定
+3. 詳細は `docs/guides/zoho_oauth_setup_guide.md` を参照
+
+詳細ガイド: [Self Client設定ガイド](docs/guides/zoho_self_client_setup.md)
 
 ## API Endpoints
 

@@ -34,7 +34,25 @@ class ZohoOAuthClient:
         self.cache_key = "zoho:access_token"
         self.cache_ttl = settings.token_cache_ttl_seconds
 
+        # Validate OAuth credentials
+        self._validate_oauth_config()
+        
         logger.info("Zoho OAuth client initialized")
+
+    def _validate_oauth_config(self) -> None:
+        """Validate OAuth configuration.
+        
+        Raises:
+            ValueError: If required OAuth credentials are missing
+        """
+        if not self.client_id:
+            raise ValueError("ZOHO_CLIENT_ID is required for OAuth authentication")
+        if not self.client_secret:
+            raise ValueError("ZOHO_CLIENT_SECRET is required for OAuth authentication")
+        if not self.refresh_token:
+            raise ValueError("ZOHO_REFRESH_TOKEN is required for OAuth authentication")
+            
+        logger.debug("OAuth configuration validated successfully")
 
     async def get_access_token(self, force_refresh: bool = False) -> str:
         """Get valid access token, refreshing if necessary.
@@ -97,12 +115,19 @@ class ZohoOAuthClient:
                     timeout=30.0
                 )
 
-                if response.status_code != 200:
-                    error_detail = response.text
-                    logger.error(f"Token refresh failed: {response.status_code} - {error_detail}")
-                    raise Exception(f"Token refresh failed: {response.status_code}")
-
                 token_data = response.json()
+                
+                # Check for error in response
+                if response.status_code != 200 or "error" in token_data:
+                    error_detail = token_data.get("error", response.text)
+                    error_description = token_data.get("error_description", "Unknown error")
+                    logger.error(f"Token refresh failed: {response.status_code} - {error_detail}: {error_description}")
+                    
+                    # Clear cached token if refresh fails
+                    await redis_client.delete(self.cache_key)
+                    
+                    raise Exception(f"Token refresh failed: {error_detail} - {error_description}")
+
                 token_response = TokenResponse(**token_data)
 
                 # Cache the new token

@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     zoho_client_id: str = Field(default="", description="Zoho OAuth Client ID")
     zoho_client_secret: str = Field(default="", description="Zoho OAuth Client Secret")
     zoho_refresh_token: str = Field(default="", description="Zoho OAuth Refresh Token")
-    portal_id: str = Field(default="", description="Zoho Portal ID")
+    portal_id: str = Field(default="", alias="ZOHO_PORTAL_ID", description="Zoho Portal ID")
 
     # JWT Configuration
     jwt_secret: str = Field(default="default_jwt_secret_key_32_chars_long", min_length=32, description="JWT Secret Key")

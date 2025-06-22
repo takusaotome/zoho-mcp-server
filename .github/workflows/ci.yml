@@ -56,7 +56,7 @@ jobs:
     - name: Check dependencies with safety
       run: safety check
     
-    - name: Run tests
+    - name: Run unit and integration tests
       env:
         REDIS_URL: redis://localhost:6379/15
         ZOHO_CLIENT_ID: test_client_id
@@ -64,8 +64,10 @@ jobs:
         ZOHO_REFRESH_TOKEN: test_refresh_token
         JWT_SECRET: test_jwt_secret_key_32_characters_min
         PORTAL_ID: test_portal_id
+        ENVIRONMENT: test
+        ALLOWED_IPS: "127.0.0.1,::1,testclient,unknown,0.0.0.0/0"
       run: |
-        pytest -v --cov=server --cov-report=xml --cov-report=term-missing
+        pytest tests/unit tests/integration -v --cov=server --cov-report=xml --cov-report=term-missing
     
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v3
@@ -73,6 +75,58 @@ jobs:
         token: ${{ secrets.CODECOV_TOKEN }}
         files: ./coverage.xml
         fail_ci_if_error: true
+
+  security-tests:
+    runs-on: ubuntu-latest
+    
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.12'
+    
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements-dev.txt
+    
+    - name: Run security tests
+      env:
+        REDIS_URL: redis://localhost:6379/15
+        ZOHO_CLIENT_ID: test_client_id
+        ZOHO_CLIENT_SECRET: test_client_secret
+        ZOHO_REFRESH_TOKEN: test_refresh_token
+        JWT_SECRET: test_jwt_secret_key_32_characters_min
+        PORTAL_ID: test_portal_id
+        ENVIRONMENT: security_test
+        ALLOWED_IPS: "127.0.0.1,::1,testclient,unknown,0.0.0.0/0"
+      run: |
+        pytest tests/security/ -v --tb=short --maxfail=5
+    
+    - name: Generate security test report
+      if: always()
+      run: |
+        pytest tests/security/ --html=security-test-report.html --self-contained-html || true
+    
+    - name: Upload security test report
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-test-report
+        path: security-test-report.html
 
   security:
     runs-on: ubuntu-latest
@@ -103,7 +157,7 @@ jobs:
   docker:
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
-    needs: [test, security]
+    needs: [test, security-tests, security]
     
     steps:
     - uses: actions/checkout@v4

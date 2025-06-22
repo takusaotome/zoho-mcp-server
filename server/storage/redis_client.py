@@ -41,17 +41,21 @@ class RedisClient:
             parsed_url = urlparse(self._url)
 
             # Create connection pool
-            self._pool = ConnectionPool.from_url(
-                self._url,
-                password=self._password if self._password else None,
-                ssl=self._ssl,
-                ssl_cert_reqs=None if self._ssl else None,
-                decode_responses=False,  # Handle encoding manually
-                max_connections=20,
-                retry_on_timeout=True,
-                socket_timeout=5,
-                socket_connect_timeout=5
-            )
+            pool_kwargs = {
+                "password": self._password if self._password else None,
+                "decode_responses": False,  # Handle encoding manually
+                "max_connections": 20,
+                "retry_on_timeout": True,
+                "socket_timeout": 5,
+                "socket_connect_timeout": 5
+            }
+            
+            # Add SSL settings only if SSL is enabled
+            if self._ssl:
+                pool_kwargs["ssl"] = True
+                pool_kwargs["ssl_cert_reqs"] = None
+                
+            self._pool = ConnectionPool.from_url(self._url, **pool_kwargs)
 
             # Create Redis client
             self._client = redis.Redis(connection_pool=self._pool)

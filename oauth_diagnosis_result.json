@@ -1,0 +1,31 @@
+{
+  "config": {
+    "ZOHO_CLIENT_ID": "***",
+    "ZOHO_CLIENT_SECRET": "***",
+    "ZOHO_REFRESH_TOKEN": "***",
+    "ZOHO_PORTAL_ID": "***"
+  },
+  "results": {
+    "refresh_token": {
+      "status_code": 200,
+      "response": {
+        "error": "invalid_code"
+      },
+      "success": false,
+      "headers": {
+        "server": "ZGS",
+        "date": "Sun, 22 Jun 2025 02:12:09 GMT",
+        "content-type": "application/json;charset=UTF-8",
+        "content-length": "24",
+        "connection": "keep-alive",
+        "set-cookie": "zalb_b266a5bf57=a7f15cb1555106de5ac96d088b72e7c8; Path=/; Secure; HttpOnly, iamcsr=a5c03312-c2e1-4665-8bc9-7f1b22bc7da5;path=/;SameSite=None;Secure;priority=high, _zcsr_tmp=a5c03312-c2e1-4665-8bc9-7f1b22bc7da5;path=/;SameSite=Strict;Secure;priority=high",
+        "cache-control": "no-store",
+        "x-content-type-options": "nosniff",
+        "pragma": "no-cache",
+        "x-frame-options": "SAMEORIGIN",
+        "content-language": "en-US",
+        "strict-transport-security": "max-age=64072000; includeSubDomains; preload"
+      }
+    }
+  }
+}

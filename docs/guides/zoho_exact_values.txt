@@ -1,0 +1,21 @@
+Zoho Developer Console - 正確な入力値
+
+=== コピー&ペースト用 ===
+
+Client Name:
+ZohoMCPServer
+
+Client Domain:
+localhost
+
+Homepage URL:
+http://localhost:8000
+
+Authorized Redirect URIs:
+http://localhost:8000/auth/callback
+
+=== 注意事項 ===
+- 上記の値を正確にコピー&ペーストしてください
+- 余分なスペースを入れないでください  
+- httpとhttpsを間違えないでください
+- ポート番号(:8000)を忘れないでください 
