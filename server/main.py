@@ -308,7 +308,29 @@ def create_app() -> FastAPI:
             )
 
     @app.post("/mcp")
-    async def mcp_endpoint(
+    async def mcp_endpoint_noauth(request: Request) -> JSONResponse:
+        """MCP JSON-RPC endpoint without authentication for Cursor compatibility."""
+        try:
+            body = await request.json()
+            logger.info(f"MCP request (no auth): {body.get('method', 'unknown')}")
+            response = await mcp_handler.handle_request(body)
+            return JSONResponse(content=response)
+        except Exception as e:
+            logger.error(f"MCP request failed: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={
+                    "jsonrpc": "2.0",
+                    "error": {
+                        "code": -32603,
+                        "message": "Internal error"
+                    },
+                    "id": body.get("id") if 'body' in locals() else None
+                }
+            )
+
+    @app.post("/mcp-auth")
+    async def mcp_endpoint_auth(
         request: Request,
         current_user: TokenData = Depends(get_current_user)
     ) -> JSONResponse:

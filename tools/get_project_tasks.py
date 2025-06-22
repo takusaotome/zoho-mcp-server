@@ -38,7 +38,7 @@ def get_project_id():
     # どちらも設定されていない場合
     print("❌ プロジェクトIDが指定されていません")
     print("\n📝 指定方法:")
-    print("1. コマンドライン引数: python tools/get_project_tasks_via_mcp.py --project-id 1790933000004263341")
+    print("1. コマンドライン引数: python tools/get_project_tasks.py --project-id 1790933000004263341")
     print("2. 環境変数: .envファイルに TARGET_PROJECT_ID=1790933000004263341 を追加")
     sys.exit(1)
 

@@ -237,7 +237,7 @@ def print_oauth_recommendations(config: Dict[str, str], results: Dict[str, Any])
             print("✅ Zoho Projects APIアクセスも正常です！")
             print("\n🚀 次のステップ:")
             print("   1. MCPサーバーを起動: uvicorn server.main:app --port 8000")
-            print("   2. プロジェクトタスクを取得: python tools/get_project_tasks_via_mcp.py")
+            print("   2. プロジェクトタスクを取得: python tools/get_project_tasks.py")
         else:
             print("\n⚠️  OAuth認証は成功していますが、API呼び出しに問題があります")
 

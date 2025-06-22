@@ -44,7 +44,7 @@ reports/
 ## 🛠️ ツール連携
 
 このディレクトリは以下のツールで使用されます：
-- `tools/get_project_tasks_via_mcp.py` - データ取得・保存
+- `tools/get_project_tasks.py` - データ取得・保存
 - `tools/generate_task_report.py` - レポート生成
 - `tools/export_project_task_details.py` - データエクスポート
 
@@ -55,7 +55,7 @@ reports/
 ```bash
 export TARGET_PROJECT_ID="実際のプロジェクトID"
 export OUTPUT_DIR="reports/exports"
-python tools/get_project_tasks_via_mcp.py
+python tools/get_project_tasks.py
 ```
 
 ## ⚠️ 注意事項

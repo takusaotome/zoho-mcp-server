@@ -43,6 +43,58 @@ class TaskHandler:
         self.api_client = ZohoAPIClient()
         logger.info("Task handler initialized")
 
+    async def list_projects(self) -> Dict[str, Any]:
+        """List all available Zoho projects.
+
+        Returns:
+            List of projects with basic information
+        """
+        try:
+            logger.info("Listing all projects")
+
+            # Build API endpoint with portal ID
+            import os
+            portal_id = os.getenv("ZOHO_PORTAL_ID", "")
+            if not portal_id:
+                raise ValueError("ZOHO_PORTAL_ID environment variable is not set")
+            endpoint = f"/portal/{portal_id}/projects/"
+
+            # Make API request
+            response = await self.api_client.get(endpoint)
+
+            # Parse projects
+            projects_data = response.get("projects", [])
+            projects = []
+
+            for project_data in projects_data:
+                try:
+                    project = {
+                        "id": str(project_data["id"]),
+                        "name": project_data["name"],
+                        "status": project_data.get("status", "Unknown"),
+                        "description": project_data.get("description", ""),
+                        "created_date": project_data.get("created_date"),
+                        "owner": project_data.get("owner", {}).get("name") if isinstance(project_data.get("owner"), dict) else project_data.get("owner"),
+                        "url": project_data.get("link", {}).get("self", {}).get("url") if isinstance(project_data.get("link"), dict) else None
+                    }
+                    projects.append(project)
+                except Exception as e:
+                    logger.warning(f"Error processing project data: {e}")
+                    logger.debug(f"Project data: {project_data}")
+                    continue
+
+            result = {
+                "projects": projects,
+                "total_count": len(projects)
+            }
+
+            logger.info(f"Retrieved {len(projects)} projects")
+            return result
+
+        except Exception as e:
+            logger.error(f"Failed to list projects: {e}")
+            raise
+
     async def list_tasks(
         self,
         project_id: str,
@@ -61,8 +113,10 @@ class TaskHandler:
             logger.info(f"Listing tasks for project {project_id}, status: {status}")
 
             # Build API endpoint with portal ID
-            from server.core.config import settings
-            portal_id = settings.portal_id
+            import os
+            portal_id = os.getenv("ZOHO_PORTAL_ID", "")
+            if not portal_id:
+                raise ValueError("ZOHO_PORTAL_ID environment variable is not set")
             endpoint = f"/portal/{portal_id}/projects/{project_id}/tasks/"
             params = {}
 
@@ -167,8 +221,10 @@ class TaskHandler:
                     raise ValueError(f"Invalid date format: {due_date}. Use YYYY-MM-DD")
 
             # Make API request with retry logic
-            from server.core.config import settings
-            portal_id = settings.portal_id
+            import os
+            portal_id = os.getenv("ZOHO_PORTAL_ID", "")
+            if not portal_id:
+                raise ValueError("ZOHO_PORTAL_ID environment variable is not set")
             endpoint = f"/portal/{portal_id}/projects/{project_id}/tasks/"
             response = await self.api_client.post(endpoint, json=payload, retry=True)
 
