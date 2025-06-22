@@ -14,6 +14,7 @@ from server.auth.jwt_handler import jwt_handler, TokenData
 from server.auth.oauth_handler import oauth_handler
 from server.core.config import settings
 from server.core.mcp_handler import MCPHandler
+from server.handlers.files import FileHandler
 from server.handlers.webhooks import WebhookHandler
 from server.middleware.rate_limit import RateLimitMiddleware
 
@@ -73,6 +74,7 @@ def create_app() -> FastAPI:
     # Initialize handlers
     mcp_handler = MCPHandler()
     webhook_handler = WebhookHandler()
+    file_handler = FileHandler()
 
     async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(security)) -> TokenData:
         """Get current authenticated user from JWT token."""
@@ -328,6 +330,62 @@ def create_app() -> FastAPI:
                     },
                     "id": body.get("id") if 'body' in locals() else None
                 }
+            )
+
+    @app.get("/api/files/search")
+    async def search_files_api(
+        query: str = "",
+        folder_id: str = None,
+        limit: int = 10
+    ) -> JSONResponse:
+        """Search files in WorkDrive via REST API."""
+        try:
+            result = await file_handler.search_files(query, folder_id)
+            return JSONResponse(content=result)
+        except Exception as e:
+            logger.error(f"File search API failed: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": str(e)}
+            )
+    
+    @app.get("/api/workspaces")
+    async def get_workspaces_api() -> JSONResponse:
+        """Get workspaces and teams via REST API."""
+        try:
+            result = await file_handler.get_workspaces_and_teams()
+            return JSONResponse(content=result)
+        except Exception as e:
+            logger.error(f"Workspaces API failed: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": str(e)}
+            )
+    
+    @app.get("/api/team-folders")
+    async def get_team_folders_api(team_id: str = None) -> JSONResponse:
+        """Get team folders via REST API."""
+        try:
+            result = await file_handler.list_team_folders(team_id)
+            return JSONResponse(content=result)
+        except Exception as e:
+            logger.error(f"Team folders API failed: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": str(e)}
+            )
+    
+    @app.get("/api/folders/{folder_id}/files")
+    async def get_folder_files_api(folder_id: str, limit: int = 50) -> JSONResponse:
+        """Get files in a specific folder via REST API."""
+        try:
+            result = await file_handler.list_folder_contents(folder_id)
+            return JSONResponse(content=result)
+        except Exception as e:
+            logger.error(f"Folder files API failed: {e}")
+            return JSONResponse(
+                status_code=500,
+                content={"error": str(e)}
             )
 
     @app.get("/manifest.json")

@@ -1,5 +1,6 @@
 """Zoho OAuth client for token management."""
 
+import asyncio
 import logging
 from typing import Any, Dict, List, Optional, Union
 
@@ -33,6 +34,11 @@ class ZohoOAuthClient:
         self.token_url = "https://accounts.zoho.com/oauth/v2/token"
         self.cache_key = "zoho:access_token"
         self.cache_ttl = settings.token_cache_ttl_seconds
+
+        # Rate limiting configuration
+        self.max_retries = 3
+        self.base_delay = 1.0  # Base delay in seconds
+        self.max_delay = 60.0  # Maximum delay in seconds
 
         # Validate OAuth credentials
         self._validate_oauth_config()
@@ -94,54 +100,102 @@ class ZohoOAuthClient:
             return None
 
     async def _refresh_access_token(self) -> str:
-        """Refresh access token using refresh token.
+        """Refresh access token using refresh token with rate limiting and retry logic.
 
         Returns:
             New access token
 
         Raises:
-            Exception: If token refresh fails
+            Exception: If token refresh fails after all retries
         """
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    self.token_url,
-                    data={
-                        "grant_type": "refresh_token",
-                        "client_id": self.client_id,
-                        "client_secret": self.client_secret,
-                        "refresh_token": self.refresh_token,
-                    },
-                    timeout=30.0
-                )
+        for attempt in range(self.max_retries):
+            try:
+                async with httpx.AsyncClient() as client:
+                    logger.debug(f"Token refresh attempt {attempt + 1}/{self.max_retries}")
+                    
+                    response = await client.post(
+                        self.token_url,
+                        data={
+                            "grant_type": "refresh_token",
+                            "client_id": self.client_id,
+                            "client_secret": self.client_secret,
+                            "refresh_token": self.refresh_token,
+                        },
+                        timeout=30.0
+                    )
 
-                token_data = response.json()
+                    token_data = response.json()
+                    
+                    # Handle rate limiting (429 Too Many Requests)
+                    if response.status_code == 429:
+                        if attempt < self.max_retries - 1:
+                            # Get retry-after header or use exponential backoff
+                            retry_after = int(response.headers.get("Retry-After", 0))
+                            if retry_after > 0:
+                                delay = min(retry_after, self.max_delay)
+                            else:
+                                delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                            
+                            logger.warning(f"Rate limited (429), waiting {delay}s before retry {attempt + 2}")
+                            await asyncio.sleep(delay)
+                            continue
+                        else:
+                            logger.error("Rate limit exceeded, no more retries available")
+                            raise Exception("Token refresh failed: 429 - Rate limit exceeded")
+                    
+                    # Check for other errors in response
+                    if response.status_code != 200 or "error" in token_data:
+                        error_detail = token_data.get("error", response.text)
+                        error_description = token_data.get("error_description", "Unknown error")
+                        
+                        # For non-retriable errors, don't retry
+                        if response.status_code in [400, 401, 403]:
+                            logger.error(f"Token refresh failed with non-retriable error: {response.status_code} - {error_detail}: {error_description}")
+                            await redis_client.delete(self.cache_key)
+                            raise Exception(f"Token refresh failed: {response.status_code} - {error_detail}: {error_description}")
+                        
+                        # For other server errors, retry with exponential backoff
+                        if attempt < self.max_retries - 1:
+                            delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                            logger.warning(f"Token refresh failed ({response.status_code}), retrying in {delay}s: {error_detail}")
+                            await asyncio.sleep(delay)
+                            continue
+                        else:
+                            logger.error(f"Token refresh failed after all retries: {response.status_code} - {error_detail}: {error_description}")
+                            await redis_client.delete(self.cache_key)
+                            raise Exception(f"Token refresh failed: {response.status_code} - {error_detail}: {error_description}")
+
+                    # Success - parse and cache token
+                    token_response = TokenResponse(**token_data)
+                    await self._cache_token(token_response.access_token, token_response.expires_in)
+                    logger.info("Access token refreshed successfully")
+                    return token_response.access_token
+
+            except httpx.RequestError as e:
+                if attempt < self.max_retries - 1:
+                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                    logger.warning(f"Network error during token refresh, retrying in {delay}s: {e}")
+                    await asyncio.sleep(delay)
+                    continue
+                else:
+                    logger.error(f"Network error during token refresh after all retries: {e}")
+                    raise Exception(f"Network error during token refresh: {e}")
+            except Exception as e:
+                if "Token refresh failed:" in str(e):
+                    # Re-raise our custom exceptions without retry
+                    raise
                 
-                # Check for error in response
-                if response.status_code != 200 or "error" in token_data:
-                    error_detail = token_data.get("error", response.text)
-                    error_description = token_data.get("error_description", "Unknown error")
-                    logger.error(f"Token refresh failed: {response.status_code} - {error_detail}: {error_description}")
-                    
-                    # Clear cached token if refresh fails
-                    await redis_client.delete(self.cache_key)
-                    
-                    raise Exception(f"Token refresh failed: {error_detail} - {error_description}")
-
-                token_response = TokenResponse(**token_data)
-
-                # Cache the new token
-                await self._cache_token(token_response.access_token, token_response.expires_in)
-
-                logger.info("Access token refreshed successfully")
-                return token_response.access_token
-
-        except httpx.RequestError as e:
-            logger.error(f"Network error during token refresh: {e}")
-            raise Exception(f"Network error during token refresh: {e}")
-        except Exception as e:
-            logger.error(f"Token refresh failed: {e}")
-            raise
+                if attempt < self.max_retries - 1:
+                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                    logger.warning(f"Unexpected error during token refresh, retrying in {delay}s: {e}")
+                    await asyncio.sleep(delay)
+                    continue
+                else:
+                    logger.error(f"Token refresh failed after all retries: {e}")
+                    raise Exception(f"Token refresh failed: {e}")
+        
+        # This should never be reached, but just in case
+        raise Exception("Token refresh failed: Maximum retries exceeded")
 
     async def _cache_token(self, access_token: str, expires_in: int) -> None:
         """Cache access token with expiration.
@@ -165,7 +219,7 @@ class ZohoOAuthClient:
             logger.warning(f"Failed to cache token: {e}")
 
     async def revoke_token(self, token: str) -> bool:
-        """Revoke an access token.
+        """Revoke an access token with retry logic.
 
         Args:
             token: Access token to revoke
@@ -173,29 +227,47 @@ class ZohoOAuthClient:
         Returns:
             True if revocation successful
         """
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://accounts.zoho.com/oauth/v2/token/revoke",
-                    data={"token": token},
-                    timeout=30.0
-                )
+        for attempt in range(self.max_retries):
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        "https://accounts.zoho.com/oauth/v2/token/revoke",
+                        data={"token": token},
+                        timeout=30.0
+                    )
 
-                if response.status_code == 200:
-                    # Remove from cache
-                    await redis_client.delete(self.cache_key)
-                    logger.info("Token revoked successfully")
-                    return True
+                    if response.status_code == 200:
+                        # Remove from cache
+                        await redis_client.delete(self.cache_key)
+                        logger.info("Token revoked successfully")
+                        return True
+                    elif response.status_code == 429:
+                        if attempt < self.max_retries - 1:
+                            delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                            logger.warning(f"Rate limited during revocation, waiting {delay}s")
+                            await asyncio.sleep(delay)
+                            continue
+                        else:
+                            logger.warning("Token revocation failed: Rate limit exceeded")
+                            return False
+                    else:
+                        logger.warning(f"Token revocation failed: {response.status_code}")
+                        return False
+
+            except Exception as e:
+                if attempt < self.max_retries - 1:
+                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                    logger.warning(f"Token revocation error, retrying in {delay}s: {e}")
+                    await asyncio.sleep(delay)
+                    continue
                 else:
-                    logger.warning(f"Token revocation failed: {response.status_code}")
+                    logger.error(f"Token revocation error after all retries: {e}")
                     return False
-
-        except Exception as e:
-            logger.error(f"Token revocation error: {e}")
-            return False
+        
+        return False
 
     async def get_token_info(self, token: str) -> Optional[dict]:
-        """Get information about an access token.
+        """Get information about an access token with retry logic.
 
         Args:
             token: Access token to check
@@ -203,23 +275,41 @@ class ZohoOAuthClient:
         Returns:
             Token information or None if invalid
         """
-        try:
-            async with httpx.AsyncClient() as client:
-                response = await client.post(
-                    "https://accounts.zoho.com/oauth/v2/token/info",
-                    data={"access_token": token},
-                    timeout=30.0
-                )
+        for attempt in range(self.max_retries):
+            try:
+                async with httpx.AsyncClient() as client:
+                    response = await client.post(
+                        "https://accounts.zoho.com/oauth/v2/token/info",
+                        data={"access_token": token},
+                        timeout=30.0
+                    )
 
-                if response.status_code == 200:
-                    return response.json()
+                    if response.status_code == 200:
+                        return response.json()
+                    elif response.status_code == 429:
+                        if attempt < self.max_retries - 1:
+                            delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                            logger.warning(f"Rate limited during token info check, waiting {delay}s")
+                            await asyncio.sleep(delay)
+                            continue
+                        else:
+                            logger.warning("Token info request failed: Rate limit exceeded")
+                            return None
+                    else:
+                        logger.warning(f"Token info request failed: {response.status_code}")
+                        return None
+
+            except Exception as e:
+                if attempt < self.max_retries - 1:
+                    delay = min(self.base_delay * (2 ** attempt), self.max_delay)
+                    logger.warning(f"Token info error, retrying in {delay}s: {e}")
+                    await asyncio.sleep(delay)
+                    continue
                 else:
-                    logger.warning(f"Token info request failed: {response.status_code}")
+                    logger.error(f"Token info error after all retries: {e}")
                     return None
-
-        except Exception as e:
-            logger.error(f"Token info error: {e}")
-            return None
+        
+        return None
 
     async def is_token_valid(self, token: str) -> bool:
         """Check if access token is valid.

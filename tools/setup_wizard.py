@@ -149,11 +149,11 @@ def run_oauth_setup():
             print("✅ MCPサーバーが稼働中です")
         else:
             print("⚠️  MCPサーバーを手動で起動してください:")
-            print("   uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload")
+            print("   uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload")
             input("サーバー起動後、Enterを押してください...")
     except:
         print("⚠️  MCPサーバーを手動で起動してください:")
-        print("   uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload")
+        print("   uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload")
         input("サーバー起動後、Enterを押してください...")
     
     # OAuth認証URL生成
@@ -167,6 +167,18 @@ def run_oauth_setup():
             print("✅ OAuth認証URL生成完了")
             print("ブラウザで認証を完了してください")
             input("認証完了後、Enterを押してください...")
+            
+            # 重要: OAuth認証後のサーバー再起動案内
+            print("\n🔄 重要: OAuth認証完了後はサーバーの再起動が必要です")
+            print("-" * 60)
+            print("理由: 新しいRefresh Tokenを読み込むため")
+            print("手順:")
+            print("1. 現在のサーバーを停止 (Ctrl+C)")
+            print("2. サーバーを再起動:")
+            print("   uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload")
+            print("-" * 60)
+            input("サーバー再起動完了後、Enterを押してください...")
+            
             return True
         else:
             print(f"❌ OAuth認証URL生成失敗: {result.stderr}")
@@ -284,9 +296,15 @@ def main():
     print("🎉 セットアップウィザード完了！")
     print("=" * 60)
     print("次の手順:")
-    print("1. MCPサーバーを起動: uvicorn server.main:app --reload")
-    print("2. テスト実行: python tools/get_project_tasks.py")
-    print("3. 詳細は README.md を参照")
+    print("1. 🔄 MCPサーバーを起動 (OAuth認証後は必ず再起動):")
+    print("   uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload")
+    print("2. 🧪 テスト実行:")
+    print("   python tools/get_project_tasks.py --project-id YOUR_PROJECT_ID")
+    print("3. 📖 詳細は README.md を参照")
+    print("\n💡 ヒント:")
+    print("   - OAuth認証完了後は必ずサーバーを再起動してください")
+    print("   - ローカル環境での利用を推奨します (127.0.0.1)")
+    print("   - 問題が発生した場合は tools/diagnose_oauth.py で診断")
 
 if __name__ == "__main__":
     main() 

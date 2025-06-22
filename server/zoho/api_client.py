@@ -195,6 +195,7 @@ class ZohoAPIClient:
         self,
         endpoint: str,
         params: Union[Dict[str, Any], None] = None,
+        headers: Union[Dict[str, str], None] = None,
         use_workdrive: bool = False,
         retry: bool = True
     ) -> Dict[str, Any]:
@@ -203,18 +204,25 @@ class ZohoAPIClient:
         Args:
             endpoint: API endpoint
             params: Query parameters
+            headers: Additional headers
             use_workdrive: Use WorkDrive API
             retry: Enable retry logic
 
         Returns:
             API response data
         """
+        kwargs = {}
+        if params:
+            kwargs["params"] = params
+        if headers:
+            kwargs["headers"] = headers
+            
         return await self._make_request(
             "GET",
             endpoint,
             use_workdrive=use_workdrive,
             retry=retry,
-            params=params
+            **kwargs
         )
 
     async def post(

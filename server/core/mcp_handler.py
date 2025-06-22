@@ -77,6 +77,9 @@ class MCPHandler:
             "downloadFile": self.file_handler.download_file,
             "uploadReviewSheet": self.file_handler.upload_review_sheet,
             "searchFiles": self.file_handler.search_files,
+            "listFiles": self.file_handler.list_files,
+            "listTeamFiles": self.file_handler.list_team_files,
+            "getWorkspacesAndTeams": self.file_handler.get_workspaces_and_teams,
         }
 
         logger.info(f"MCP handler initialized with {len(self.tools)} tools")

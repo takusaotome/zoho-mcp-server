@@ -32,7 +32,9 @@ def generate_auth_url(client_id, redirect_uri=None):
     # 必要なスコープ（正しい形式）
     scopes = [
         "ZohoProjects.projects.read",
-        "ZohoProjects.tasks.all"
+        "ZohoProjects.tasks.all",
+        "WorkDrive.files.READ",
+        "WorkDrive.files.CREATE"
     ]
     
     # OAuth認証URLのパラメータ

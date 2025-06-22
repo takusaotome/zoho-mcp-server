@@ -21,9 +21,18 @@ Model Context Protocol (MCP) server for Zoho Projects and WorkDrive integration.
 
 ## Overview
 
-**⚡ 5分でZoho Projects APIを使い始められる！**
+**⚡ Get started with Zoho Projects API in 5 minutes!**
 
 This server enables natural language interaction with Zoho applications through MCP-compatible clients like Cursor IDE and Claude. It provides secure access to Zoho Projects tasks and WorkDrive files via JSON-RPC protocol.
+
+### 🏠 **Recommended Usage**
+
+**🎯 Local usage is strongly recommended!**
+
+- ✅ **Personal Development & Learning**: Local environment is optimal
+- ✅ **Prototyping**: Safe development environment for testing
+- ✅ **Small Teams**: Limited usage in VPN environment
+- ⚠️ **Production Deployment**: Requires advanced security configuration
 
 ### ✨ Key Features
 - **🎯 Easy Setup**: 5-minute OAuth setup with automatic token management
@@ -31,6 +40,7 @@ This server enables natural language interaction with Zoho applications through 
 - **🚀 Fast**: Redis caching, async processing
 - **📊 Comprehensive**: Task management, file operations, project analytics
 - **🤖 AI-Ready**: Perfect for Cursor IDE, Claude, and other MCP clients
+- **🏠 Local-First**: Prioritizes safe usage in local environments
 
 ### 🎬 What You Can Do
 - 📝 **Create and manage tasks** with natural language
@@ -38,6 +48,15 @@ This server enables natural language interaction with Zoho applications through 
 - 🔍 **Search across projects** and files
 - 📁 **Upload/download files** to WorkDrive
 - 🔔 **Real-time webhooks** for task updates
+
+### 💡 **Use Case Recommendations**
+
+| Use Case | Recommended Environment | Security Level |
+|----------|-------------------------|----------------|
+| 🧪 **Personal Learning & Development** | Local environment | Basic setup |
+| 👥 **Small Teams** | Local + VPN | Standard setup |
+| 🏢 **Enterprise Use** | Dedicated server + VPN | Advanced setup |
+| 🚀 **Production Service** | Not recommended | - |
 
 ## Project Structure
 
@@ -84,41 +103,46 @@ zoho-mcp-server/
 
 ## 🚀 Quick Start Guide
 
-> **⏱️ 所要時間: 約5分** | **💡 初回セットアップのみ必要**
+> **⏱️ Time required: About 5 minutes** | **💡 Initial setup only** | **🏠 Local environment recommended**
 
-### 🧙‍♂️ Option A: 自動セットアップ（推奨）
+### 🎯 **Let's start with local environment first!**
 
-**最も簡単な方法！ウィザードが全て自動化します：**
+This guide assumes safe usage in a local environment. If you're considering production deployment, please check [security risks](#-deployment) first.
+
+### 🧙‍♂️ Option A: Automatic Setup (Recommended)
+
+**The easiest way! Wizard automates everything:**
 
 ```bash
-# 1. 依存関係をインストール
+# 1. Install dependencies
 pip install -r requirements-dev.txt
 
-# 2. セットアップウィザードを実行
+# 2. Run setup wizard
 python tools/setup_wizard.py
 ```
 
-ウィザードが以下を自動実行：
-- ✅ 前提条件チェック（Python, Redis）
-- ✅ .envファイル作成
-- ✅ JWT_SECRET自動生成
-- ✅ Zoho認証情報の設定
-- ✅ OAuth認証フロー
-- ✅ Portal ID・Project ID取得
-- ✅ 最終テスト実行
+The wizard automatically performs:
+- ✅ Prerequisites check (Python, Redis)
+- ✅ .env file creation
+- ✅ JWT_SECRET auto-generation
+- ✅ Zoho authentication setup
+- ✅ OAuth authentication flow
+- ✅ Portal ID & Project ID retrieval
+- ✅ Final testing
 
-**5分で完了！** 🎉
+**Complete in 5 minutes!** 🎉
 
 ---
 
-### 📖 Option B: 手動セットアップ
+### 📖 Option B: Manual Setup
 
-詳細を理解したい場合の手動セットアップ：
+Manual setup for those who want to understand the details:
 
 ### 📋 Prerequisites
 - **Python 3.12+** (with pip)
-- **Redis server** (local or cloud)
+- **Redis server** (local installation recommended)
 - **Zoho account** (Projects and WorkDrive access)
+- **Local development environment** (macOS, Windows, Linux)
 
 ### 🔧 Step 1: Installation
 
@@ -129,9 +153,9 @@ cd zoho-mcp-server
 pip install -r requirements-dev.txt
 ```
 
-2. **Start Redis** (if not running):
+2. **Start Redis** (local server):
 ```bash
-# macOS (Homebrew)
+# macOS (Homebrew) - recommended
 brew install redis
 brew services start redis
 
@@ -139,8 +163,11 @@ brew services start redis
 sudo apt install redis-server
 sudo systemctl start redis
 
-# Windows (WSL recommended)
+# Windows (WSL recommended) 
 sudo service redis-server start
+
+# Docker (cross-platform)
+docker run -d -p 6379:6379 redis:alpine
 ```
 
 ### 🔐 Step 2: Zoho OAuth Setup
@@ -181,16 +208,20 @@ TARGET_PROJECT_ID=your_project_id_here
 REDIS_URL=redis://localhost:6379/0
 ```
 
-   **3.1. Generate JWT Secret** (簡単！):
+   **3.1. Generate JWT Secret** (Easy!):
    ```bash
    python tools/generate_jwt_secret.py
    ```
-   - 自動で安全なJWT_SECRETを生成
-   - .envファイルに自動追加オプション
-   - ✅ 30秒で完了！
+   - Automatically generates secure JWT_SECRET
+   - Auto-add to .env file option
+   - ✅ Complete in 30 seconds!
 
-4. **Start the server**:
+4. **Start the server** (local environment):
 ```bash
+# Local environment startup (recommended)
+uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload
+
+# Or to allow external access (caution required)
 uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
@@ -198,7 +229,7 @@ uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
 ```bash
 python tools/generate_zoho_auth_url.py
 ```
-   - Select option **1** (推奨・自動設定)
+   - Select option **1** (recommended, automatic setup)
    - Follow the browser authentication
    - ✅ **Done!** Refresh token is automatically saved
 
@@ -208,7 +239,7 @@ python tools/generate_zoho_auth_url.py
 python tools/verify_setup.py
 
 # Test API access (optional)
-python tools/get_project_tasks_via_mcp.py
+python tools/get_project_tasks.py
 ```
    - ✅ If successful, you'll see your projects and tasks!
 
@@ -240,12 +271,12 @@ python tools/verify_setup.py
 ```bash
 python tools/get_real_portal_and_projects.py
 ```
-   - 📋 利用可能なプロジェクト一覧が表示されます
-   - 📝 Portal IDとProject IDをメモしてください
+   - 📋 Available project list will be displayed
+   - 📝 Note down Portal ID and Project ID
 
 3. **Update `.env` file with your IDs**:
 ```bash
-# .envファイルを編集して以下を更新:
+# Edit .env file and update the following:
 ZOHO_PORTAL_ID=your_actual_portal_id
 TARGET_PROJECT_ID=your_actual_project_id
 ```
@@ -254,22 +285,42 @@ TARGET_PROJECT_ID=your_actual_project_id
 
 4. **Complete API test**:
 ```bash
-python tools/get_project_tasks_via_mcp.py
+python tools/get_project_tasks.py
 ```
-   - ✅ 成功すると、プロジェクトのタスク一覧が表示されます
+   - ✅ If successful, project task list will be displayed
 
 5. **Alternative: Test with specific project**:
 ```bash
-python tools/get_project_tasks_via_mcp.py --project-id YOUR_PROJECT_ID
+python tools/get_project_tasks.py --project-id YOUR_PROJECT_ID
 ```
 
 ### 🎯 Step 6: Start Using
 
-Your MCP server is now ready! The server provides:
+🎉 **Local environment setup complete!** Your MCP server is now ready! The server provides:
 
-- **MCP Endpoint**: `http://localhost:8000/mcp`
-- **Health Check**: `http://localhost:8000/health`
-- **API Docs**: `http://localhost:8000/docs` (debug mode)
+- **MCP Endpoint**: `http://127.0.0.1:8000/mcp` (local only)
+- **Health Check**: `http://127.0.0.1:8000/health`
+- **API Docs**: `http://127.0.0.1:8000/docs` (debug mode)
+
+### 🔄 **重要: OAuth認証後の必須手順**
+
+**OAuth認証完了後は必ずサーバーを再起動してください：**
+
+```bash
+# 1. 現在のサーバーを停止 (Ctrl+C)
+# 2. サーバーを再起動
+uvicorn server.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+**理由**: 新しいRefresh Tokenを正しく読み込むため
+
+### 🛡️ **Security Notes**
+
+- ✅ **Local Usage**: Safest and recommended usage method
+- ⚠️ **External Access**: Requires advanced security configuration ([details](#-deployment))
+- 🔒 **Sensitive Data**: Never share .env file
+- 🏠 **Development Environment**: Manage production data in separate environment
+- 🔄 **After OAuth**: Always restart server after authentication
 
 ### 🔧 Quick Troubleshooting
 
@@ -434,34 +485,79 @@ pre-commit run --all-files
 
 ## 🚀 Deployment
 
-### Render Platform
-This project is configured for deployment on Render using `render.yaml`.
+⚠️ **Important**: Make sure to complete security configuration before deploying to production!
 
-1. Connect your GitHub repository to Render
-2. Configure environment variables in Render dashboard
-3. Deploy automatically on push to main branch
+### 🚨 Security Warning
+
+**Deploying to Render as-is would be dangerous!** Anyone could access your Zoho account.
+
+**Required**: Read the [Render Production Security Setup Guide](docs/guides/render_security_setup.md) first.
+
+### Render Platform (After Security Configuration)
+
+1. **Complete security configuration** - [Security Guide](docs/guides/render_security_setup.md)
+2. Connect your GitHub repository to Render
+3. Configure environment variables in Render dashboard (following security guide)
+4. Deploy automatically on push to main branch
+
+### 🔒 Production Environment Variables (Required Security Configuration)
+
+```bash
+# Security configuration (required)
+ENVIRONMENT=production
+DEBUG=false
+LOG_LEVEL=WARNING
+ALLOWED_IPS=your.office.ip,your.home.ip  # Allow only your IPs
+JWT_SECRET=your_128_character_super_secure_secret  # 128 characters recommended
+JWT_EXPIRE_HOURS=1  # Short expiration time
+
+# Zoho configuration
+ZOHO_CLIENT_ID=your_zoho_client_id
+ZOHO_CLIENT_SECRET=your_zoho_client_secret  
+ZOHO_REFRESH_TOKEN=your_zoho_refresh_token
+ZOHO_PORTAL_ID=your_portal_id
+TARGET_PROJECT_ID=your_project_id
+
+# Enhanced security
+RATE_LIMIT_PER_MINUTE=20  # Strict rate limiting
+```
+
+### 🚀 JWT Token Generation (For Production)
+
+```bash
+# Generate token for team member
+python tools/generate_jwt_token.py generate --user "team_member_1" --expires-hours 24
+
+# For temporary access
+python tools/generate_jwt_token.py generate --user "temp_access" --expires-hours 1
+
+# Token validation
+python tools/generate_jwt_token.py validate "your_jwt_token_here"
+```
 
 ### Docker
 ```bash
 # Build image
 docker build -t zoho-mcp-server .
 
-# Run container
+# Run container (with security configuration)
 docker run -p 8000:8000 --env-file .env zoho-mcp-server
 ```
 
 ### Environment-specific Configuration
 
-#### Production
+#### Production (Security Enhanced)
 - Use Render Starter plan or higher
-- Configure Redis Add-on
+- Configure Redis Add-on with authentication
 - Set up monitoring and alerts
 - Enable auto-scaling
+- **IP restrictions and JWT authentication required**
 
 #### Development  
 - Use local Redis instance
 - Enable debug mode
 - Use development Zoho credentials
+- Local IP allowlist configuration
 
 ## Monitoring
 

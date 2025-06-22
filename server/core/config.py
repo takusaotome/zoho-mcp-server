@@ -54,7 +54,7 @@ class Settings(BaseSettings):
         description="Zoho Projects API Base URL"
     )
     workdrive_api_url: str = Field(
-        default="https://www.zohoapis.com/workdrive/api/v1",
+        default="https://workdrive.zoho.com/api/v1",
         description="Zoho WorkDrive API URL"
     )
 
