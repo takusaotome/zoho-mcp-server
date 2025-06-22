@@ -22,7 +22,7 @@
 
 ### 📁 WorkDrive関連
 - `workdrive_summary.py` - **WorkDrive総合情報表示（推奨）**
-- `get_workspace_files.py` - **ワークスペースファイル取得（特化型）**
+- `get_workspace_files.py` - **ワークスペースファイル取得（軽量版）**
 
 ## 🎯 推奨使用順序
 
@@ -39,50 +39,130 @@ python tools/verify_setup.py
 
 ### 日常運用
 ```bash
-# プロジェクト情報確認
-python tools/get_real_portal_and_projects.py
+# プロジェクトタスク取得
+python tools/get_project_tasks.py
 
-# タスクデータ取得
-python tools/get_project_tasks.py --project-id YOUR_PROJECT_ID
+# WorkDriveファイル確認
+python tools/workdrive_summary.py
+python tools/get_workspace_files.py
 
 # レポート生成
 python tools/generate_task_report.py
-
-# WorkDrive情報確認（総合）
-python tools/workdrive_summary.py
-
-# WorkDrive ワークスペースファイル取得（特化）
-python tools/get_workspace_files.py --details
-python tools/get_workspace_files.py --team-id YOUR_TEAM_ID --query "検索語"
 ```
 
-### トラブルシューティング
+## 📖 各ツールの詳細説明
+
+### 🚀 セットアップ・認証関連
+
+#### `setup_wizard.py`
+- **推奨**: 初回セットアップ用ウィザード
+- 環境変数設定、OAuth認証、動作確認を自動実行
+- 対話形式で簡単セットアップ
+
+#### `generate_jwt_secret.py`
+- JWT認証用の秘密鍵生成
+- 256-bitランダムキー生成
+
+#### `generate_zoho_auth_url.py`
+- Zoho OAuth認証URL生成
+- 自動ブラウザ起動とコールバック処理
+- 認証フロー完全自動化対応
+
+### 🔍 診断・確認
+
+#### `diagnose_oauth.py`
+- OAuth認証問題の詳細診断
+- 環境変数、トークン状態、API接続確認
+- 問題解決のための詳細レポート生成
+
+#### `verify_setup.py`
+- セットアップ完了後の動作確認
+- 全機能の統合テスト実行
+
+### 📊 データ取得・レポート
+
+#### `get_real_portal_and_projects.py`
+- Zoho Projects Portal・プロジェクト情報取得
+- 利用可能なリソース一覧表示
+
+#### `get_project_tasks.py`
+- 指定プロジェクトのタスクデータ取得
+- MCP経由でのリアルタイムデータ取得
+
+#### `generate_task_report.py`
+- プロジェクトタスクのMarkdownレポート生成
+- 進捗状況、優先度別サマリー作成
+
+#### `export_project_task_details.py`
+- タスクデータの詳細JSONエクスポート
+- 外部システム連携用データ出力
+
+### 📁 WorkDrive関連
+
+#### `workdrive_summary.py` ⭐ 推奨
+- WorkDrive総合情報表示ツール
+- ワークスペース、チーム、ファイル情報を統合表示
+- 複数エンドポイントからの包括的情報取得
+
+#### `get_workspace_files.py`
+- 軽量版ワークスペースファイル取得ツール
+- 特定ワークスペースIDのファイルリスト取得に特化
+- シンプルで高速な動作
+
+**使用方法:**
 ```bash
-# OAuth認証問題の診断
-python tools/diagnose_oauth.py
+# デフォルトワークスペースのファイル取得
+python tools/get_workspace_files.py
 
-# 設定・動作確認
-python tools/verify_setup.py
+# 特定ワークスペースIDを指定
+python tools/get_workspace_files.py <workspace_id>
+
+# 例: 特定のワークスペースID
+python tools/get_workspace_files.py hui9647cb257be9684fe294205f6519388d14
 ```
 
-## ✅ ファイル整理完了
+**機能:**
+- 📁 ワークスペースファイル・フォルダリスト表示
+- 🎨 カラー付きログ出力
+- 📊 ファイル数統計表示
+- 🔍 ファイル詳細情報（ID、タイプ、作成日時）
 
-重複機能を持つファイルの整理が完了しました：
+## 🛠️ トラブルシューティング
 
-### 削除されたファイル
-- ~~`get_folder_contents.py`~~ - workdrive_summaryに統合  
-- ~~`get_folder_files.py`~~ - workdrive_summaryに統合
-- ~~`get_team_folders.py`~~ - workdrive_summaryに統合
-- ~~`generate_jwt_token.py`~~ - 特殊用途のみ、通常運用では不要
+### よくある問題
 
-### 復活したファイル
-- `get_workspace_files.py` - ワークスペースファイル取得に特化した軽量版
+1. **認証エラー**
+   ```bash
+   python tools/diagnose_oauth.py
+   ```
 
-### メリット
-✅ **メンテナンス性向上** - 重複コードの削減  
-✅ **使いやすさ向上** - 選択肢が明確  
-✅ **混乱防止** - 似た機能のツールが複数あることによる混乱を防止  
-✅ **特化機能** - 用途別に最適化されたツール  
-✅ **ディスク容量節約** - 約40KB程度の節約
+2. **セットアップ問題**
+   ```bash
+   python tools/setup_wizard.py
+   ```
 
-現在のtoolsディレクトリは最適化され、必要最小限かつ用途別に特化した機能を提供しています。 
+3. **WorkDriveアクセス問題**
+   ```bash
+   python tools/workdrive_summary.py
+   ```
+
+### ログレベル
+- 🔵 INFO: 一般情報
+- 🟢 SUCCESS: 成功
+- 🟡 WARNING: 警告
+- 🔴 ERROR: エラー
+- 🟣 HEADER: セクションヘッダー
+
+## 📝 注意事項
+
+1. **環境要件**: Python 3.9+、必要パッケージインストール済み
+2. **認証**: 事前にZoho OAuth認証完了が必要
+3. **ネットワーク**: インターネット接続とZoho APIアクセス必要
+4. **権限**: 適切なZohoアプリケーション権限設定が必要
+
+## 🎉 整理完了
+
+- ✅ 重複ツール削除済み
+- ✅ 機能別分類整理済み  
+- ✅ 推奨使用順序明確化
+- ✅ 包括的ドキュメント完備
