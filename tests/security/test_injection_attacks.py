@@ -1,9 +1,7 @@
 """Injection attack security tests for Zoho MCP Server."""
 
-import json
-from unittest.mock import patch, AsyncMock
+from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -18,7 +16,7 @@ class TestInjectionSecurity:
             '{"jsonrpc": "2.0", "method": "ping", "id": 1, "params": {"$where": "1=1"}}',
             '{"jsonrpc": "2.0", "method": "ping", "id": 1, "injection": "<script>alert(1)</script>"}',
         ]
-        
+
         for payload in malformed_payloads:
             response = client.post(
                 "/mcp",
@@ -44,7 +42,7 @@ class TestInjectionSecurity:
                 "id": 1
             },
             {
-                "jsonrpc": "2.0", 
+                "jsonrpc": "2.0",
                 "method": "callTool",
                 "params": {
                     "name": "createTask",
@@ -57,7 +55,7 @@ class TestInjectionSecurity:
                 "id": 2
             }
         ]
-        
+
         for payload in nosql_injection_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             # Should reject or sanitize the malicious input
@@ -72,7 +70,7 @@ class TestInjectionSecurity:
         command_injection_payloads = [
             {
                 "jsonrpc": "2.0",
-                "method": "callTool", 
+                "method": "callTool",
                 "params": {
                     "name": "downloadFile",
                     "arguments": {
@@ -85,7 +83,7 @@ class TestInjectionSecurity:
                 "jsonrpc": "2.0",
                 "method": "callTool",
                 "params": {
-                    "name": "uploadReviewSheet", 
+                    "name": "uploadReviewSheet",
                     "arguments": {
                         "project_id": "test",
                         "folder_id": "folder",
@@ -96,7 +94,7 @@ class TestInjectionSecurity:
                 "id": 2
             }
         ]
-        
+
         for payload in command_injection_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             # Should validate and reject malicious input
@@ -118,7 +116,7 @@ class TestInjectionSecurity:
             },
             {
                 "jsonrpc": "2.0",
-                "method": "callTool", 
+                "method": "callTool",
                 "params": {
                     "name": "searchFiles",
                     "arguments": {
@@ -129,7 +127,7 @@ class TestInjectionSecurity:
                 "id": 2
             }
         ]
-        
+
         for payload in path_traversal_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             assert response.status_code in [400, 422, 200]
@@ -141,7 +139,7 @@ class TestInjectionSecurity:
                 "jsonrpc": "2.0",
                 "method": "callTool",
                 "params": {
-                    "name": "createTask", 
+                    "name": "createTask",
                     "arguments": {
                         "project_id": "test",
                         "name": "<script>alert('XSS')</script>",  # XSS attempt
@@ -151,7 +149,7 @@ class TestInjectionSecurity:
                 "id": 1
             }
         ]
-        
+
         for payload in xss_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             if response.status_code == 200:
@@ -176,7 +174,7 @@ class TestInjectionSecurity:
                 "id": 1
             }
         ]
-        
+
         for payload in ldap_injection_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             assert response.status_code in [400, 422, 200]
@@ -191,25 +189,25 @@ class TestInjectionSecurity:
           <!ENTITY lol3 "&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;&lol2;">
         ]>
         <lolz>&lol3;</lolz>'''
-        
+
         import base64
         xml_bomb_b64 = base64.b64encode(xml_bomb.encode()).decode()
-        
+
         payload = {
             "jsonrpc": "2.0",
-            "method": "callTool", 
+            "method": "callTool",
             "params": {
                 "name": "uploadReviewSheet",
                 "arguments": {
                     "project_id": "test",
-                    "folder_id": "folder", 
+                    "folder_id": "folder",
                     "name": "malicious.xml",
                     "content_base64": xml_bomb_b64
                 }
             },
             "id": 1
         }
-        
+
         response = client.post("/mcp", headers=auth_headers, json=payload)
         # Should handle the malicious XML safely
         assert response.status_code in [400, 422, 200]
@@ -221,7 +219,7 @@ class TestInjectionSecurity:
             "X-Custom-Header": "value\r\nSet-Cookie: evil=true",
             "User-Agent": "Mozilla/5.0\r\nX-Forwarded-For: 127.0.0.1"
         }
-        
+
         for header_name, header_value in malicious_headers.items():
             headers = {header_name: header_value}
             response = client.post("/mcp", headers=headers, json={
@@ -250,7 +248,7 @@ class TestInjectionSecurity:
             },
             {
                 "jsonrpc": "2.0",
-                "method": "callTool", 
+                "method": "callTool",
                 "params": {
                     "name": "updateTask",
                     "arguments": {
@@ -262,7 +260,7 @@ class TestInjectionSecurity:
                 "id": 2
             }
         ]
-        
+
         for payload in pollution_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             assert response.status_code in [400, 422, 200]
@@ -271,7 +269,7 @@ class TestInjectionSecurity:
     def test_injection_in_database_queries(self, mock_list_tasks, client: TestClient, auth_headers):
         """Test that database queries are protected from injection."""
         mock_list_tasks.return_value = {"tasks": [], "total_count": 0}
-        
+
         # SQL injection attempts in parameters
         sql_injection_payloads = [
             "'; DROP TABLE tasks; --",
@@ -279,13 +277,13 @@ class TestInjectionSecurity:
             "UNION SELECT * FROM users",
             "1; EXEC xp_cmdshell('dir')",
         ]
-        
+
         for injection_payload in sql_injection_payloads:
             payload = {
                 "jsonrpc": "2.0",
                 "method": "callTool",
                 "params": {
-                    "name": "listTasks", 
+                    "name": "listTasks",
                     "arguments": {
                         "project_id": injection_payload,
                         "status": "open"
@@ -293,9 +291,9 @@ class TestInjectionSecurity:
                 },
                 "id": 1
             }
-            
-            response = client.post("/mcp", headers=auth_headers, json=payload)
-            
+
+            client.post("/mcp", headers=auth_headers, json=payload)
+
             # Verify the handler was called with the exact string (not executed as SQL)
             if mock_list_tasks.called:
                 args, kwargs = mock_list_tasks.call_args
@@ -319,7 +317,7 @@ class TestInjectionSecurity:
                 "id": 1
             }
         ]
-        
+
         for payload in template_injection_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)
             if response.status_code == 200:
@@ -344,7 +342,7 @@ class TestInjectionSecurity:
                 "id": 1
             }
         ]
-        
+
         # This test primarily ensures that log injection attempts don't crash the system
         for payload in log_injection_payloads:
             response = client.post("/mcp", headers=auth_headers, json=payload)

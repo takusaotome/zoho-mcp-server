@@ -1,7 +1,7 @@
 """Redis client for caching and storage."""
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, Optional, Union
 from urllib.parse import urlparse
 
 import redis.asyncio as redis
@@ -18,7 +18,7 @@ class RedisClient:
     def __init__(self) -> None:
         """Initialize Redis client."""
         self._pool: Optional[ConnectionPool] = None
-        self._client: Optional[redis.Redis] = None
+        self._client: redis.Optional[Redis] = None
         self._url = settings.redis_url
         self._password = settings.redis_password
         self._ssl = settings.redis_ssl
@@ -31,7 +31,8 @@ class RedisClient:
         """
         if self._client is None:
             await self._create_connection()
-        assert self._client is not None
+        if self._client is None:
+            raise RuntimeError("Failed to establish Redis connection")
         return self._client
 
     async def _create_connection(self) -> None:
@@ -49,12 +50,12 @@ class RedisClient:
                 "socket_timeout": 5,
                 "socket_connect_timeout": 5
             }
-            
+
             # Add SSL settings only if SSL is enabled
             if self._ssl:
                 pool_kwargs["ssl"] = True
                 pool_kwargs["ssl_cert_reqs"] = None
-                
+
             self._pool = ConnectionPool.from_url(self._url, **pool_kwargs)
 
             # Create Redis client
@@ -123,7 +124,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.setex(key, time, value)
+            result = await client.setex(key, time, value)
+            return bool(result)
         except Exception as e:
             logger.error(f"Redis SETEX failed for key '{key}': {e}")
             return False
@@ -139,7 +141,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.delete(*keys)
+            result = await client.delete(*keys)
+            return int(result)
         except Exception as e:
             logger.error(f"Redis DELETE failed for keys {keys}: {e}")
             return 0
@@ -155,7 +158,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.exists(*keys)
+            result = await client.exists(*keys)
+            return int(result)
         except Exception as e:
             logger.error(f"Redis EXISTS failed for keys {keys}: {e}")
             return 0
@@ -171,7 +175,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.ttl(key)
+            result = await client.ttl(key)
+            return int(result)
         except Exception as e:
             logger.error(f"Redis TTL failed for key '{key}': {e}")
             return -2
@@ -188,7 +193,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.expire(key, time)
+            result = await client.expire(key, time)
+            return bool(result)
         except Exception as e:
             logger.error(f"Redis EXPIRE failed for key '{key}': {e}")
             return False
@@ -205,7 +211,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.incr(key, amount)
+            result = await client.incr(key, amount)
+            return int(result)
         except Exception as e:
             logger.error(f"Redis INCR failed for key '{key}': {e}")
             return None
@@ -226,7 +233,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.hset(name, mapping=mapping)
+            result = await client.hset(name, mapping=mapping)
+            return int(result)
         except Exception as e:
             logger.error(f"Redis HSET failed for hash '{name}': {e}")
             return 0
@@ -243,12 +251,13 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.hget(name, key)
+            result = await client.hget(name, key)
+            return bytes(result) if result is not None else None
         except Exception as e:
             logger.error(f"Redis HGET failed for hash '{name}', field '{key}': {e}")
             return None
 
-    async def hgetall(self, name: str) -> Dict[bytes, bytes]:
+    async def hgetall(self, name: str) -> dict[bytes, bytes]:
         """Get all hash fields and values.
 
         Args:
@@ -259,7 +268,8 @@ class RedisClient:
         """
         try:
             client = await self._ensure_connection()
-            return await client.hgetall(name)
+            result = await client.hgetall(name)
+            return {k.decode() if isinstance(k, bytes) else k: v.decode() if isinstance(v, bytes) else v for k, v in result.items()}
         except Exception as e:
             logger.error(f"Redis HGETALL failed for hash '{name}': {e}")
             return {}

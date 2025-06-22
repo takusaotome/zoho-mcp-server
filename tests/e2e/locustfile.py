@@ -3,20 +3,20 @@
 import json
 import random
 import time
-from datetime import datetime
-from locust import HttpUser, task, between, events
+
+from locust import HttpUser, between, events, task
 
 
 class MCPUser(HttpUser):
     """Simulated MCP client user."""
-    
+
     wait_time = between(1, 3)  # Wait 1-3 seconds between tasks
-    
+
     def on_start(self):
         """Called when a user starts."""
         self.project_ids = [
             "test_project_001",
-            "test_project_002", 
+            "test_project_002",
             "test_project_003"
         ]
         self.task_ids = []
@@ -28,22 +28,22 @@ class MCPUser(HttpUser):
             "test_folder_001",
             "test_folder_002"
         ]
-        
+
         # Verify server is healthy
         self.check_health()
-    
+
     def check_health(self):
         """Check if server is healthy."""
         response = self.client.get("/health")
         if response.status_code != 200:
             print(f"Health check failed: {response.status_code}")
-    
+
     @task(5)
     def list_tasks(self):
         """List tasks - most common operation."""
         project_id = random.choice(self.project_ids)
         status = random.choice(["open", "closed", "overdue", None])
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -55,10 +55,10 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_list_{int(time.time())}"
         }
-        
+
         if status:
             request_data["params"]["arguments"]["status"] = status
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -70,13 +70,13 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(3)
     def create_task(self):
         """Create task - moderate frequency."""
         project_id = random.choice(self.project_ids)
         timestamp = int(time.time())
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -91,7 +91,7 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_create_{timestamp}"
         }
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -111,7 +111,7 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(2)
     def update_task(self):
         """Update task - lower frequency."""
@@ -120,9 +120,9 @@ class MCPUser(HttpUser):
             task_id = f"test_task_{random.randint(1, 1000)}"
         else:
             task_id = random.choice(self.task_ids)
-        
+
         status = random.choice(["open", "closed"])
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -135,7 +135,7 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_update_{int(time.time())}"
         }
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -151,13 +151,13 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(2)
     def get_project_summary(self):
         """Get project summary."""
         project_id = random.choice(self.project_ids)
         period = random.choice(["week", "month"])
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -170,7 +170,7 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_summary_{int(time.time())}"
         }
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -182,7 +182,7 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(1)
     def get_task_detail(self):
         """Get task detail - lower frequency."""
@@ -190,7 +190,7 @@ class MCPUser(HttpUser):
             task_id = f"test_task_{random.randint(1, 1000)}"
         else:
             task_id = random.choice(self.task_ids)
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -202,7 +202,7 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_detail_{int(time.time())}"
         }
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -218,13 +218,13 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(1)
     def search_files(self):
         """Search files."""
         query = random.choice(["test", "document", "review", "report"])
         folder_id = random.choice(self.folder_ids + [None])
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -236,10 +236,10 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_search_{int(time.time())}"
         }
-        
+
         if folder_id:
             request_data["params"]["arguments"]["folder_id"] = folder_id
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -251,12 +251,12 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(1)
     def download_file(self):
         """Download file - lowest frequency."""
         file_id = random.choice(self.file_ids)
-        
+
         request_data = {
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -268,7 +268,7 @@ class MCPUser(HttpUser):
             },
             "id": f"perf_download_{int(time.time())}"
         }
-        
+
         with self.client.post("/mcp", json=request_data, catch_response=True) as response:
             if response.status_code == 200:
                 data = response.json()
@@ -284,7 +284,7 @@ class MCPUser(HttpUser):
                     response.failure("Invalid MCP response format")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(1)
     def test_manifest(self):
         """Test manifest endpoint."""
@@ -300,7 +300,7 @@ class MCPUser(HttpUser):
                     response.failure("Invalid JSON response")
             else:
                 response.failure(f"HTTP {response.status_code}")
-    
+
     @task(1)
     def test_health(self):
         """Test health endpoint."""
@@ -320,14 +320,14 @@ class MCPUser(HttpUser):
 
 class HighLoadUser(MCPUser):
     """High-load user for stress testing."""
-    
+
     wait_time = between(0.1, 0.5)  # Much faster requests
-    
+
     @task(10)
     def rapid_list_tasks(self):
         """Rapid task listing for stress testing."""
         self.list_tasks()
-    
+
     @task(1)
     def rapid_health_check(self):
         """Rapid health checks."""
@@ -336,9 +336,9 @@ class HighLoadUser(MCPUser):
 
 class SpikeTestUser(MCPUser):
     """User for spike testing - sudden load increases."""
-    
+
     wait_time = between(0, 0.1)  # Very fast requests
-    
+
     @task
     def spike_requests(self):
         """Generate spike in requests."""
@@ -359,7 +359,7 @@ def on_request(request_type, name, response_time, response_length, exception, co
     """Handle request events for custom metrics."""
     if exception:
         print(f"Request failed: {name} - {exception}")
-    
+
     # Log slow requests (over 500ms as per SLA)
     if response_time > 500:
         print(f"Slow request detected: {name} took {response_time:.2f}ms")
@@ -376,12 +376,12 @@ def on_test_start(environment, **kwargs):
 def on_test_stop(environment, **kwargs):
     """Called when test stops."""
     print("Performance test completed.")
-    
+
     # Print summary statistics
     stats = environment.stats
     total_requests = stats.total.num_requests
     total_failures = stats.total.num_failures
-    
+
     if total_requests > 0:
         failure_rate = (total_failures / total_requests) * 100
         print(f"Total requests: {total_requests}")
@@ -389,7 +389,7 @@ def on_test_stop(environment, **kwargs):
         print(f"Failure rate: {failure_rate:.2f}%")
         print(f"Average response time: {stats.total.avg_response_time:.2f}ms")
         print(f"95th percentile: {stats.total.get_response_time_percentile(0.95):.2f}ms")
-        
+
         # Check SLA compliance
         if stats.total.avg_response_time > 500:
             print("⚠️  WARNING: Average response time exceeds 500ms SLA")

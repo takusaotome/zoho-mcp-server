@@ -2,7 +2,7 @@
 
 import ipaddress
 import logging
-from typing import List, Union
+from typing import List, Optional, Union
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -18,7 +18,7 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
         self,
         app,
         allowed_ips: List[str],
-        bypass_paths: List[str] = None
+        bypass_paths: Optional[List[str]] = None
     ) -> None:
         """Initialize IP allowlist middleware.
 
@@ -119,7 +119,7 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
             if client_ip in ['testclient', 'unknown'] and self._is_test_environment():
                 return True
             return False
-    
+
     def _is_test_environment(self) -> bool:
         """Check if running in test environment."""
         import os

@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Optional
 
 import httpx
 from pydantic import BaseModel
@@ -42,12 +42,12 @@ class ZohoOAuthClient:
 
         # Validate OAuth credentials
         self._validate_oauth_config()
-        
+
         logger.info("Zoho OAuth client initialized")
 
     def _validate_oauth_config(self) -> None:
         """Validate OAuth configuration.
-        
+
         Raises:
             ValueError: If required OAuth credentials are missing
         """
@@ -57,7 +57,7 @@ class ZohoOAuthClient:
             raise ValueError("ZOHO_CLIENT_SECRET is required for OAuth authentication")
         if not self.refresh_token:
             raise ValueError("ZOHO_REFRESH_TOKEN is required for OAuth authentication")
-            
+
         logger.debug("OAuth configuration validated successfully")
 
     async def get_access_token(self, force_refresh: bool = False) -> str:
@@ -112,7 +112,7 @@ class ZohoOAuthClient:
             try:
                 async with httpx.AsyncClient() as client:
                     logger.debug(f"Token refresh attempt {attempt + 1}/{self.max_retries}")
-                    
+
                     response = await client.post(
                         self.token_url,
                         data={
@@ -125,7 +125,7 @@ class ZohoOAuthClient:
                     )
 
                     token_data = response.json()
-                    
+
                     # Handle rate limiting (429 Too Many Requests)
                     if response.status_code == 429:
                         if attempt < self.max_retries - 1:
@@ -135,25 +135,25 @@ class ZohoOAuthClient:
                                 delay = min(retry_after, self.max_delay)
                             else:
                                 delay = min(self.base_delay * (2 ** attempt), self.max_delay)
-                            
+
                             logger.warning(f"Rate limited (429), waiting {delay}s before retry {attempt + 2}")
                             await asyncio.sleep(delay)
                             continue
                         else:
                             logger.error("Rate limit exceeded, no more retries available")
                             raise Exception("Token refresh failed: 429 - Rate limit exceeded")
-                    
+
                     # Check for other errors in response
                     if response.status_code != 200 or "error" in token_data:
                         error_detail = token_data.get("error", response.text)
                         error_description = token_data.get("error_description", "Unknown error")
-                        
+
                         # For non-retriable errors, don't retry
                         if response.status_code in [400, 401, 403]:
                             logger.error(f"Token refresh failed with non-retriable error: {response.status_code} - {error_detail}: {error_description}")
                             await redis_client.delete(self.cache_key)
                             raise Exception(f"Token refresh failed: {response.status_code} - {error_detail}: {error_description}")
-                        
+
                         # For other server errors, retry with exponential backoff
                         if attempt < self.max_retries - 1:
                             delay = min(self.base_delay * (2 ** attempt), self.max_delay)
@@ -184,7 +184,7 @@ class ZohoOAuthClient:
                 if "Token refresh failed:" in str(e):
                     # Re-raise our custom exceptions without retry
                     raise
-                
+
                 if attempt < self.max_retries - 1:
                     delay = min(self.base_delay * (2 ** attempt), self.max_delay)
                     logger.warning(f"Unexpected error during token refresh, retrying in {delay}s: {e}")
@@ -193,7 +193,7 @@ class ZohoOAuthClient:
                 else:
                     logger.error(f"Token refresh failed after all retries: {e}")
                     raise Exception(f"Token refresh failed: {e}")
-        
+
         # This should never be reached, but just in case
         raise Exception("Token refresh failed: Maximum retries exceeded")
 
@@ -263,7 +263,7 @@ class ZohoOAuthClient:
                 else:
                     logger.error(f"Token revocation error after all retries: {e}")
                     return False
-        
+
         return False
 
     async def get_token_info(self, token: str) -> Optional[dict]:
@@ -308,7 +308,7 @@ class ZohoOAuthClient:
                 else:
                     logger.error(f"Token info error after all retries: {e}")
                     return None
-        
+
         return None
 
     async def is_token_valid(self, token: str) -> bool:

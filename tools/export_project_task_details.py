@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """サンプルプロジェクトプロジェクトのタスク詳細をエクスポート"""
 
-import asyncio
-import httpx
-import json
-import jwt
-import os
 import ast
+import asyncio
+import json
+import os
 from datetime import datetime, timedelta
+
+import httpx
+import jwt
 from dotenv import load_dotenv
 
 # 環境設定読み込み
@@ -36,7 +37,7 @@ async def call_mcp_tool(tool_name, arguments):
         "Authorization": f"Bearer {token}",
         "Content-Type": "application/json"
     }
-    
+
     payload = {
         "jsonrpc": "2.0",
         "method": "callTool",
@@ -46,7 +47,7 @@ async def call_mcp_tool(tool_name, arguments):
         },
         "id": 1
     }
-    
+
     async with httpx.AsyncClient() as client:
         try:
             response = await client.post(
@@ -55,14 +56,14 @@ async def call_mcp_tool(tool_name, arguments):
                 headers=headers,
                 timeout=30.0
             )
-            
+
             if response.status_code == 200:
                 return response.json()
             else:
                 print(f"❌ HTTP エラー: {response.status_code}")
                 print(response.text)
                 return None
-                
+
         except Exception as e:
             print(f"❌ 接続エラー: {e}")
             return None
@@ -71,17 +72,17 @@ def parse_mcp_response(response_data):
     """MCPレスポンスを解析"""
     if not response_data:
         return None
-    
+
     if "error" in response_data and response_data["error"]:
         print(f"❌ MCPエラー: {response_data['error']['message']}")
         return None
-    
+
     if "result" not in response_data or not response_data["result"]:
         print("❌ 結果が空です")
         return None
-    
+
     result = response_data["result"]
-    
+
     # MCP形式のレスポンスを解析
     if isinstance(result, dict) and "content" in result:
         content = result["content"]
@@ -89,20 +90,20 @@ def parse_mcp_response(response_data):
             for item in content:
                 if isinstance(item, dict) and "text" in item:
                     text = item["text"]
-                    
+
                     # まずJSONとして試行
                     try:
                         return json.loads(text)
                     except json.JSONDecodeError:
                         pass
-                    
+
                     # Python辞書形式として試行
                     try:
                         return ast.literal_eval(text)
                     except (ValueError, SyntaxError):
                         print(f"❌ 解析失敗: {text[:100]}...")
                         return None
-    
+
     return None
 
 def format_task_detail(task):
@@ -119,7 +120,7 @@ def format_task_detail(task):
         "percent_complete": task.get('percent_complete', 0),
         "url": task.get('url', 'N/A')
     }
-    
+
     # ステータス情報
     status_info = task.get('status', {})
     if isinstance(status_info, dict):
@@ -134,7 +135,7 @@ def format_task_detail(task):
             "id": 'N/A',
             "color_code": 'N/A'
         }
-    
+
     # 担当者情報
     owner_info = task.get('owner', {})
     if isinstance(owner_info, dict):
@@ -149,17 +150,17 @@ def format_task_detail(task):
             "id": 'N/A',
             "email": 'N/A'
         }
-    
+
     return task_detail
 
 async def get_project_summary():
     """プロジェクトサマリーを取得"""
     print("📊 プロジェクトサマリー取得中...")
-    
+
     response = await call_mcp_tool("getProjectSummary", {
         "project_id": PROJECT_ID
     })
-    
+
     summary_data = parse_mcp_response(response)
     if summary_data:
         print("✅ プロジェクトサマリー取得成功")
@@ -171,11 +172,11 @@ async def get_project_summary():
 async def get_all_tasks():
     """全てのタスクを取得"""
     print("📋 全タスク取得中...")
-    
+
     response = await call_mcp_tool("listTasks", {
         "project_id": PROJECT_ID
     })
-    
+
     tasks_data = parse_mcp_response(response)
     if tasks_data and "tasks" in tasks_data:
         print(f"✅ タスク取得成功: {len(tasks_data['tasks'])}個")
@@ -189,7 +190,7 @@ async def get_task_details(task_id):
     response = await call_mcp_tool("getTaskDetail", {
         "task_id": task_id
     })
-    
+
     task_detail = parse_mcp_response(response)
     return task_detail
 
@@ -199,32 +200,32 @@ async def export_task_details():
     print("=" * 70)
     print(f"プロジェクトID: {PROJECT_ID}")
     print("=" * 70)
-    
+
     # Step 1: プロジェクトサマリー取得
     summary = await get_project_summary()
-    
+
     # Step 2: 全タスク取得
     all_tasks = await get_all_tasks()
-    
+
     if not all_tasks:
         print("❌ タスクが取得できませんでした")
         return
-    
+
     # Step 3: 各タスクの詳細情報を整形
     print("\n📝 タスク詳細情報を整形中...")
     detailed_tasks = []
-    
+
     for i, task in enumerate(all_tasks, 1):
         print(f"   [{i:2d}/{len(all_tasks)}] {task.get('name', 'N/A')[:50]}...")
-        
+
         # 基本タスク情報を整形
         formatted_task = format_task_detail(task)
-        
+
         # より詳細な情報が必要な場合はgetTaskDetailを呼び出し
         # (今回は基本情報で十分なのでスキップ)
-        
+
         detailed_tasks.append(formatted_task)
-    
+
     # Step 4: エクスポートデータを構築
     export_data = {
         "export_info": {
@@ -241,72 +242,72 @@ async def export_task_details():
             "priority_breakdown": {}
         }
     }
-    
+
     # Step 5: 統計情報を計算
     for task in detailed_tasks:
         # ステータス別集計
         status = task["status"]["name"]
         export_data["statistics"]["status_breakdown"][status] = \
             export_data["statistics"]["status_breakdown"].get(status, 0) + 1
-        
+
         # 担当者別集計
         owner = task["owner"]["name"]
         export_data["statistics"]["owner_breakdown"][owner] = \
             export_data["statistics"]["owner_breakdown"].get(owner, 0) + 1
-        
+
         # 優先度別集計
         priority = task["priority"]
         export_data["statistics"]["priority_breakdown"][priority] = \
             export_data["statistics"]["priority_breakdown"].get(priority, 0) + 1
-    
+
     # Step 6: ファイルに出力
     # reports/exportsディレクトリを作成
     export_dir = "reports/exports"
     os.makedirs(export_dir, exist_ok=True)
-    
+
     output_filename = f"project_tasks_tasks_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     output_filepath = os.path.join(export_dir, output_filename)
-    
+
     print(f"\n💾 ファイル出力中: {output_filepath}")
-    
+
     try:
         with open(output_filepath, 'w', encoding='utf-8') as f:
             json.dump(export_data, f, ensure_ascii=False, indent=2)
-        
+
         print(f"✅ ファイル出力完了: {output_filepath}")
-        
+
         # ファイルサイズを表示
         file_size = os.path.getsize(output_filepath)
         print(f"   ファイルサイズ: {file_size:,} bytes ({file_size/1024:.1f} KB)")
-        
+
     except Exception as e:
         print(f"❌ ファイル出力失敗: {e}")
         return
-    
+
     # Step 7: サマリー表示
     print("\n" + "=" * 70)
     print("📊 エクスポートサマリー")
     print("=" * 70)
     print(f"総タスク数: {len(detailed_tasks)}個")
-    
+
     print("\nステータス別タスク数:")
     for status, count in sorted(export_data["statistics"]["status_breakdown"].items()):
         print(f"  • {status}: {count}個")
-    
+
     print("\n担当者別タスク数:")
     owner_stats = export_data["statistics"]["owner_breakdown"]
     for owner, count in sorted(owner_stats.items(), key=lambda x: x[1], reverse=True)[:10]:
         print(f"  • {owner}: {count}個")
-    
+
     if len(owner_stats) > 10:
         print(f"  ... 他 {len(owner_stats) - 10} 名")
-    
+
     print("\n優先度別タスク数:")
     for priority, count in sorted(export_data["statistics"]["priority_breakdown"].items()):
         print(f"  • {priority}: {count}個")
-    
+
     print(f"\n✅ エクスポート完了: {output_filepath}")
     print("=" * 70)
 
 if __name__ == "__main__":
-    asyncio.run(export_task_details()) 
+    asyncio.run(export_task_details())

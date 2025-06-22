@@ -5,6 +5,7 @@ Model Context Protocol (MCP) server for Zoho Projects and WorkDrive integration.
 ## 📖 Table of Contents
 
 - [🚀 Quick Start Guide](#-quick-start-guide)
+  - [🤖 MCP Client Setup (Cursor IDE / Claude Desktop)](#-mcp-client-setup-cursor-ide--claude-desktop)
   - [📋 Prerequisites](#-prerequisites)
   - [🔧 Step 1: Installation](#-step-1-installation)
   - [🔐 Step 2: Zoho OAuth Setup](#-step-2-zoho-oauth-setup)
@@ -109,6 +110,85 @@ zoho-mcp-server/
 
 This guide assumes safe usage in a local environment. If you're considering production deployment, please check [security risks](#-deployment) first.
 
+## 🤖 MCP Client Setup (Cursor IDE / Claude Desktop)
+
+**For local MCP usage, JWT authentication is NOT required!** The MCP server runs directly as a subprocess.
+
+### 🎯 Cursor IDE Setup
+
+1. **Install the MCP server** (follow installation steps below)
+2. **Configure Cursor MCP settings**:
+
+Create or update `~/.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "zoho-mcp-server": {
+      "command": "/path/to/your/project/venv/bin/python",
+      "args": ["-m", "server.mcp_stdio_server"],
+      "env": {
+        "PYTHONPATH": "/path/to/your/project/zoho-mcp-server",
+        "ZOHO_CLIENT_ID": "your_client_id",
+        "ZOHO_CLIENT_SECRET": "your_client_secret", 
+        "ZOHO_REFRESH_TOKEN": "your_refresh_token",
+        "ZOHO_PORTAL_ID": "your_portal_id",
+        "REDIS_URL": "redis://localhost:6379/0",
+        "REDIS_SSL": "false",
+        "ALLOWED_IPS": "127.0.0.1,::1,localhost",
+        "ENVIRONMENT": "development"
+      },
+      "cwd": "/path/to/your/project/zoho-mcp-server"
+    }
+  }
+}
+```
+
+3. **Restart Cursor IDE** to load the MCP server
+4. **Test the connection** by asking Cursor about your Zoho projects
+
+### 🎯 Claude Desktop Setup
+
+1. **Install the MCP server** (follow installation steps below)
+2. **Configure Claude Desktop MCP settings**:
+
+Create or update `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS):
+```json
+{
+  "mcpServers": {
+    "zoho-mcp-server": {
+      "command": "/path/to/your/project/venv/bin/python",
+      "args": ["-m", "server.mcp_stdio_server"],
+      "env": {
+        "PYTHONPATH": "/path/to/your/project/zoho-mcp-server",
+        "ZOHO_CLIENT_ID": "your_client_id",
+        "ZOHO_CLIENT_SECRET": "your_client_secret",
+        "ZOHO_REFRESH_TOKEN": "your_refresh_token", 
+        "ZOHO_PORTAL_ID": "your_portal_id",
+        "REDIS_URL": "redis://localhost:6379/0",
+        "REDIS_SSL": "false",
+        "ALLOWED_IPS": "127.0.0.1,::1,localhost",
+        "ENVIRONMENT": "development"
+      },
+      "cwd": "/path/to/your/project/zoho-mcp-server"
+    }
+  }
+}
+```
+
+For Windows: `%APPDATA%/Claude/claude_desktop_config.json`
+For Linux: `~/.config/Claude/claude_desktop_config.json`
+
+3. **Restart Claude Desktop** to load the MCP server
+4. **Test the connection** by asking Claude about your Zoho projects
+
+### 💡 Important Notes for MCP Setup
+
+- **No JWT required**: MCP clients run the server as a subprocess, so no authentication tokens needed
+- **Use full paths**: Always use absolute paths for `command` and `cwd`
+- **Virtual environment**: Make sure to use the Python executable from your virtual environment
+- **Environment variables**: All Zoho credentials must be provided in the `env` section
+- **Redis required**: Make sure Redis is running locally (`brew services start redis` on macOS)
+
 ### 🧙‍♂️ Option A: Automatic Setup (Recommended)
 
 **The easiest way! Wizard automates everything:**
@@ -195,8 +275,8 @@ cp config/env.example .env
 ZOHO_CLIENT_ID=1000.XXXXXXXXXXXXXXXXXX
 ZOHO_CLIENT_SECRET=your_client_secret_here
 
-# Required: Generate JWT Secret (see step 3.1 below)
-JWT_SECRET=your_generated_jwt_secret_here
+# JWT Secret (ONLY required for web server deployment, NOT for MCP usage)
+# JWT_SECRET=your_generated_jwt_secret_here  # Comment out for MCP usage
 
 # Required: Your Portal ID (see step 5.2 below)
 ZOHO_PORTAL_ID=your_portal_id
@@ -208,13 +288,13 @@ TARGET_PROJECT_ID=your_project_id_here
 REDIS_URL=redis://localhost:6379/0
 ```
 
-   **3.1. Generate JWT Secret** (Easy!):
+   **3.1. Generate JWT Secret** (ONLY for web server deployment):
    ```bash
-   python tools/generate_jwt_secret.py
+   # Skip this step for MCP usage!
+   # python tools/generate_jwt_secret.py
    ```
-   - Automatically generates secure JWT_SECRET
-   - Auto-add to .env file option
-   - ✅ Complete in 30 seconds!
+   - ⚠️ **For MCP usage**: JWT is NOT required, skip this step
+   - ✅ **For web server**: Automatically generates secure JWT_SECRET
 
 4. **Start the server** (local environment):
 ```bash
@@ -344,17 +424,17 @@ redis-cli ping
 # Should return: PONG
 ```
 
-**❌ JWT_SECRET missing or invalid**
+**❌ JWT_SECRET missing or invalid** (Web server only)
 ```bash
-# Generate new JWT secret
+# For MCP usage: JWT is NOT required, comment out JWT_SECRET in .env
+# For web server: Generate new JWT secret
 python tools/generate_jwt_secret.py
-# Select option to auto-add to .env file
 ```
 
-**❌ "JWT_SECRET too short" error**
+**❌ "JWT_SECRET too short" error** (Web server only)
 ```bash
-# JWT_SECRET must be at least 32 characters
-# Use the generator tool for secure secret:
+# For MCP usage: Comment out JWT_SECRET in .env file
+# For web server: JWT_SECRET must be at least 32 characters
 python tools/generate_jwt_secret.py
 ```
 
@@ -370,7 +450,7 @@ For detailed troubleshooting, see: [`docs/guides/`](docs/guides/)
 | `ZOHO_CLIENT_SECRET` | Zoho OAuth Client Secret | ✅ Yes | - |
 | `ZOHO_REFRESH_TOKEN` | OAuth Refresh Token (auto-generated) | ✅ Yes | - |
 | `ZOHO_PORTAL_ID` | Your Zoho Portal ID | ⚠️ Recommended | - |
-| `JWT_SECRET` | JWT signing secret (use `tools/generate_jwt_secret.py`) | ✅ Yes | - |
+| `JWT_SECRET` | JWT signing secret (ONLY for web server, NOT for MCP) | ❌ No (for MCP) | - |
 | `REDIS_URL` | Redis connection URL | ✅ Yes | `redis://localhost:6379/0` |
 | `ALLOWED_IPS` | IP allowlist (comma-separated) | ❌ No | `127.0.0.1,::1` |
 | `RATE_LIMIT_PER_MINUTE` | Request rate limit | ❌ No | `100` |

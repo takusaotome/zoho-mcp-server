@@ -1,8 +1,9 @@
 """Security tests configuration and fixtures."""
 
 import os
+from unittest.mock import AsyncMock, Mock
+
 import pytest
-from unittest.mock import Mock, AsyncMock
 
 # Set security test environment
 os.environ["ENVIRONMENT"] = "security_test"
@@ -14,8 +15,9 @@ os.environ["JWT_SECRET"] = "security_test_jwt_secret_key_32_chars_long_for_testi
 def security_client():
     """Create test client with security-specific configuration."""
     from fastapi.testclient import TestClient
+
     from server.main import create_app
-    
+
     app = create_app()
     return TestClient(app)
 
@@ -62,7 +64,7 @@ def malicious_payloads():
 def mock_security_zoho_api():
     """Mock Zoho API for security testing."""
     mock = Mock()
-    
+
     # Mock secure responses
     mock.get = AsyncMock(return_value={
         "tasks": [
@@ -75,17 +77,17 @@ def mock_security_zoho_api():
             }
         ]
     })
-    
+
     mock.post = AsyncMock(return_value={
         "task": {
             "id": "new_secure_task",
             "name": "New Security Test Task"
         }
     })
-    
+
     mock.put = AsyncMock(return_value={"status": "updated"})
     mock.delete = AsyncMock(return_value={"status": "deleted"})
-    
+
     return mock
 
 
@@ -149,13 +151,13 @@ def penetration_test_data():
 @pytest.fixture
 def timing_attack_detector():
     """Utility for detecting timing attack vulnerabilities."""
-    import time
     import statistics
-    
+    import time
+
     class TimingDetector:
         def __init__(self):
             self.measurements = []
-        
+
         def measure(self, func, *args, **kwargs):
             """Measure execution time of a function."""
             start = time.perf_counter()
@@ -167,25 +169,25 @@ def timing_attack_detector():
             finally:
                 end = time.perf_counter()
                 self.measurements.append(end - start)
-        
+
         def has_timing_difference(self, threshold=0.01):
             """Check if there's a significant timing difference."""
             if len(self.measurements) < 2:
                 return False
-            
+
             mean_time = statistics.mean(self.measurements)
-            std_dev = statistics.stdev(self.measurements) if len(self.measurements) > 1 else 0
-            
+            statistics.stdev(self.measurements) if len(self.measurements) > 1 else 0
+
             # Check if any measurement is significantly different
             for measurement in self.measurements:
                 if abs(measurement - mean_time) > threshold:
                     return True
             return False
-        
+
         def reset(self):
             """Reset measurements."""
             self.measurements = []
-    
+
     return TimingDetector()
 
 
@@ -202,7 +204,7 @@ def security_test_config():
         "sensitive_headers": ["authorization", "x-api-key", "cookie"],
         "security_headers_required": [
             "x-content-type-options",
-            "x-frame-options", 
+            "x-frame-options",
             "x-xss-protection"
         ]
     }

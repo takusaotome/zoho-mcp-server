@@ -3,8 +3,7 @@
 import base64
 import json
 import time
-from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
+from datetime import timedelta
 
 import jwt
 import pytest
@@ -34,7 +33,7 @@ class TestAuthenticationSecurity:
         headers = {"Authorization": "Bearer invalid_token_here"}
         response = client.post("/mcp", headers=headers, json={
             "jsonrpc": "2.0",
-            "method": "callTool", 
+            "method": "callTool",
             "params": {"name": "listTasks", "arguments": {"project_id": "test"}},
             "id": 1
         })
@@ -49,7 +48,7 @@ class TestAuthenticationSecurity:
             {"Authorization": "invalid_format"},  # No scheme
             {"Authorization": ""},  # Empty
         ]
-        
+
         for headers in malformed_headers:
             response = client.post("/mcp", headers=headers, json={
                 "jsonrpc": "2.0",
@@ -61,34 +60,34 @@ class TestAuthenticationSecurity:
     def test_jwt_algorithm_confusion_attack(self):
         """Test protection against JWT algorithm confusion attacks."""
         jwt_handler = JWTHandler()
-        
+
         # Create a valid token
-        valid_token = jwt_handler.create_access_token("test_user")
-        
+        jwt_handler.create_access_token("test_user")
+
         # Try to decode with 'none' algorithm (should fail)
         with pytest.raises(HTTPException):
             # Manually craft token with 'none' algorithm
             header = {"alg": "none", "typ": "JWT"}
             payload = {"sub": "test_user", "exp": int(time.time()) + 3600}
-            
+
             none_token = (
                 base64.urlsafe_b64encode(json.dumps(header).encode()).decode().rstrip('=') + '.' +
                 base64.urlsafe_b64encode(json.dumps(payload).encode()).decode().rstrip('=') + '.'
             )
-            
+
             jwt_handler.verify_token(none_token)
 
     def test_jwt_signature_verification(self):
         """Test JWT signature verification."""
         jwt_handler = JWTHandler()
-        
+
         # Create valid token
         token = jwt_handler.create_access_token("test_user")
-        
+
         # Tamper with token signature
         parts = token.split('.')
         tampered_token = parts[0] + '.' + parts[1] + '.tampered_signature'
-        
+
         with pytest.raises(HTTPException) as exc_info:
             jwt_handler.verify_token(tampered_token)
         assert exc_info.value.status_code == 401
@@ -96,13 +95,13 @@ class TestAuthenticationSecurity:
     def test_jwt_expiration_enforcement(self):
         """Test that expired tokens are properly rejected."""
         jwt_handler = JWTHandler()
-        
+
         # Create token that expires immediately
         expired_token = jwt_handler.create_access_token(
             "test_user",
             expires_delta=timedelta(seconds=-1)
         )
-        
+
         with pytest.raises(HTTPException) as exc_info:
             jwt_handler.verify_token(expired_token)
         assert exc_info.value.status_code == 401
@@ -110,7 +109,7 @@ class TestAuthenticationSecurity:
     def test_jwt_timing_attack_resistance(self):
         """Test resistance to timing attacks on token verification."""
         jwt_handler = JWTHandler()
-        
+
         # Create multiple invalid tokens
         invalid_tokens = [
             "invalid.token.here",
@@ -118,7 +117,7 @@ class TestAuthenticationSecurity:
             "",
             "valid.looking.butinvalidtoken123",
         ]
-        
+
         # Measure response times (should be consistent)
         times = []
         for token in invalid_tokens:
@@ -129,7 +128,7 @@ class TestAuthenticationSecurity:
                 pass
             end_time = time.time()
             times.append(end_time - start_time)
-        
+
         # All verification times should be relatively similar
         # (within reasonable variance for invalid tokens)
         avg_time = sum(times) / len(times)
@@ -141,11 +140,11 @@ class TestAuthenticationSecurity:
         # Get initial token
         jwt_handler = JWTHandler()
         token1 = jwt_handler.create_access_token("user1")
-        
+
         # Token should be unique for each generation
         token2 = jwt_handler.create_access_token("user1")
         assert token1 != token2
-        
+
         # Both tokens should be valid but independent
         data1 = jwt_handler.verify_token(token1)
         data2 = jwt_handler.verify_token(token2)
@@ -155,14 +154,14 @@ class TestAuthenticationSecurity:
     def test_concurrent_login_handling(self):
         """Test handling of concurrent logins for same user."""
         jwt_handler = JWTHandler()
-        
+
         # Create multiple tokens for same user
         tokens = []
         for _ in range(5):
             token = jwt_handler.create_access_token("test_user")
             tokens.append(token)
             time.sleep(0.01)  # Small delay to ensure different timestamps
-        
+
         # All tokens should be valid independently
         for token in tokens:
             token_data = jwt_handler.verify_token(token)
@@ -180,11 +179,11 @@ class TestAuthenticationSecurity:
                 "id": i
             })
             assert response.status_code in [401, 403]
-        
+
         # System should still accept valid tokens after failed attempts
         jwt_handler = JWTHandler()
         valid_token = jwt_handler.create_access_token("test_user")
-        
+
         response = client.post("/mcp", headers={
             "Authorization": f"Bearer {valid_token}"
         }, json={
@@ -199,14 +198,14 @@ class TestAuthenticationSecurity:
         """Test that tokens don't leak sensitive information."""
         jwt_handler = JWTHandler()
         token = jwt_handler.create_access_token("sensitive_user_id")
-        
+
         # Decode token payload without verification to check contents
         payload = jwt.decode(token, options={"verify_signature": False})
-        
+
         # Should only contain necessary claims
         required_claims = {"sub", "exp", "iat", "type"}
         actual_claims = set(payload.keys())
-        
+
         # Should not contain extra sensitive information
         assert actual_claims == required_claims
         assert payload["type"] == "access"
@@ -224,7 +223,7 @@ class TestAuthenticationSecurity:
             # Multiple authorization headers
             {"Authorization": ["Bearer token1", "Bearer token2"]},
         ]
-        
+
         for headers in bypass_attempts:
             response = client.post("/mcp", headers=headers, json={
                 "jsonrpc": "2.0",
@@ -237,14 +236,14 @@ class TestAuthenticationSecurity:
     def test_privilege_escalation_prevention(self, client: TestClient):
         """Test prevention of privilege escalation attempts."""
         jwt_handler = JWTHandler()
-        
+
         # Create token for regular user
         user_token = jwt_handler.create_access_token("regular_user")
-        
+
         # Attempt to access admin-like functionality
         # (In this case, we test that user context is properly maintained)
         headers = {"Authorization": f"Bearer {user_token}"}
-        
+
         response = client.post("/mcp", headers=headers, json={
             "jsonrpc": "2.0",
             "method": "callTool",
@@ -254,7 +253,7 @@ class TestAuthenticationSecurity:
             },
             "id": 1
         })
-        
+
         # The user should be authenticated but may not have access to admin resources
         # (This depends on how authorization is implemented at the resource level)
         assert response.status_code in [200, 403]  # Either success or forbidden, but not unauthorized
@@ -269,7 +268,7 @@ class TestAuthenticationSecurity:
     def test_malformed_jwt_handling(self, invalid_jwt):
         """Test handling of various malformed JWT tokens."""
         jwt_handler = JWTHandler()
-        
+
         with pytest.raises(HTTPException) as exc_info:
             jwt_handler.verify_token(invalid_jwt)
         assert exc_info.value.status_code == 401

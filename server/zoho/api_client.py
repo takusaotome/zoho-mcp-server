@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Union, Optional
 
 import httpx
 
@@ -35,7 +35,7 @@ class ZohoAPIClient:
 
         logger.info("Zoho API client initialized")
 
-    async def _get_headers(self, use_workdrive: bool = False) -> Dict[str, str]:
+    async def _get_headers(self, use_workdrive: bool = False) -> dict[str, str]:
         """Get request headers with authentication token.
 
         Args:
@@ -61,7 +61,7 @@ class ZohoAPIClient:
         use_workdrive: bool = False,
         retry: bool = False,
         **kwargs
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make HTTP request to Zoho API with retry logic.
 
         Args:
@@ -118,7 +118,7 @@ class ZohoAPIClient:
         response: httpx.Response,
         attempt: int,
         max_attempts: int
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Handle API response and errors.
 
         Args:
@@ -194,11 +194,11 @@ class ZohoAPIClient:
     async def get(
         self,
         endpoint: str,
-        params: Union[Dict[str, Any], None] = None,
-        headers: Union[Dict[str, str], None] = None,
+        params: Optional[dict[str, Any]] = None,
+        headers: Optional[dict[str, str]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make GET request to Zoho API.
 
         Args:
@@ -216,7 +216,7 @@ class ZohoAPIClient:
             kwargs["params"] = params
         if headers:
             kwargs["headers"] = headers
-            
+
         return await self._make_request(
             "GET",
             endpoint,
@@ -228,12 +228,12 @@ class ZohoAPIClient:
     async def post(
         self,
         endpoint: str,
-        json: Union[Dict[str, Any], None] = None,
-        data: Union[Dict[str, Any], None] = None,
-        files: Union[Dict[str, Any], None] = None,
+        json: Optional[dict[str, Any]] = None,
+        data: Optional[dict[str, Any]] = None,
+        files: Optional[dict[str, Any]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make POST request to Zoho API.
 
         Args:
@@ -275,10 +275,10 @@ class ZohoAPIClient:
     async def put(
         self,
         endpoint: str,
-        json: Union[Dict[str, Any], None] = None,
+        json: Optional[dict[str, Any]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make PUT request to Zoho API.
 
         Args:
@@ -303,7 +303,7 @@ class ZohoAPIClient:
         endpoint: str,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Make DELETE request to Zoho API.
 
         Args:

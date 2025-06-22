@@ -8,19 +8,20 @@ import urllib.parse
 import webbrowser
 from pathlib import Path
 
+
 def load_env_config():
     """現在の.env設定を読み込み"""
     env_config = {}
     env_file = Path(".env")
-    
+
     if env_file.exists():
-        with open(env_file, 'r') as f:
+        with open(env_file) as f:
             for line in f:
                 line = line.strip()
                 if line and not line.startswith('#') and '=' in line:
                     key, value = line.split('=', 1)
                     env_config[key.strip()] = value.strip()
-    
+
     return env_config
 
 def generate_auth_url(client_id, redirect_uri=None):
@@ -28,7 +29,7 @@ def generate_auth_url(client_id, redirect_uri=None):
     if not redirect_uri:
         # Self Client方式の場合は urn:ietf:wg:oauth:2.0:oob を使用
         redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
-    
+
     # 必要なスコープ（正しい形式）
     scopes = [
         "ZohoProjects.projects.read",
@@ -36,7 +37,7 @@ def generate_auth_url(client_id, redirect_uri=None):
         "WorkDrive.files.READ",
         "WorkDrive.files.CREATE"
     ]
-    
+
     # OAuth認証URLのパラメータ
     params = {
         "scope": ",".join(scopes),
@@ -46,23 +47,23 @@ def generate_auth_url(client_id, redirect_uri=None):
         "access_type": "offline",  # リフレッシュトークンを取得するために必要
         "prompt": "consent"  # 毎回同意画面を表示
     }
-    
+
     base_url = "https://accounts.zoho.com/oauth/v2/auth"
     query_string = urllib.parse.urlencode(params)
     auth_url = f"{base_url}?{query_string}"
-    
+
     return auth_url
 
 def main():
     """メイン処理"""
     print("🔐 Zoho OAuth認証URL生成ツール")
     print("=" * 50)
-    
+
     # 現在の.env設定を確認
     env_config = load_env_config()
     client_id = env_config.get("ZOHO_CLIENT_ID")
     redirect_uri = env_config.get("ZOHO_REDIRECT_URI")
-    
+
     if not client_id:
         print("❌ ZOHO_CLIENT_IDが.envファイルに設定されていません")
         print()
@@ -71,16 +72,16 @@ def main():
         print("2. Client ID を .env ファイルに設定")
         print("3. このスクリプトを再実行")
         return
-    
+
     if client_id.startswith("1000."):
         print(f"✅ Client ID: {client_id[:20]}...")
     else:
         print("⚠️  Client IDの形式が正しくない可能性があります")
         print(f"   現在の値: {client_id}")
         print("   正しい形式: 1000.XXXXXXXXXX")
-    
+
     print()
-    
+
     # Redirect URIの選択
     if not redirect_uri:
         print("🔗 Redirect URIを選択してください:")
@@ -89,7 +90,7 @@ def main():
         print("3. https://accounts.zoho.com/oauth/callback (Zoho標準)")
         print("4. カスタムURIを入力")
         print()
-        
+
         try:
             choice = input("選択 (1-4): ").strip()
             if choice == "1":
@@ -109,13 +110,13 @@ def main():
         except (KeyboardInterrupt, EOFError):
             print("\n❌ 操作がキャンセルされました")
             return
-    
+
     print(f"🔗 使用するRedirect URI: {redirect_uri}")
     print("🌐 OAuth認証URL生成中...")
-    
+
     # 認証URL生成
     auth_url = generate_auth_url(client_id, redirect_uri)
-    
+
     print()
     print("✅ 認証URL生成完了!")
     print("=" * 50)
@@ -138,7 +139,7 @@ def main():
     print("-" * 30)
     print(auth_url)
     print()
-    
+
     # 自動でブラウザを開くか確認
     try:
         response = input("ブラウザを自動で開きますか？ (y/n): ").strip().lower()
@@ -149,7 +150,7 @@ def main():
             print("💡 上記URLを手動でブラウザにコピーしてください")
     except (KeyboardInterrupt, EOFError):
         print("\n💡 上記URLを手動でブラウザにコピーしてください")
-    
+
     print()
     print("⚠️  重要な注意事項:")
     print("- 認証コードは10分間で期限切れになります")
@@ -163,4 +164,4 @@ def main():
     print("- Zoho Developer ConsoleでRedirect URIの設定を確認してください")
 
 if __name__ == "__main__":
-    main() 
+    main()

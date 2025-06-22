@@ -1,8 +1,8 @@
 """Rate limiting middleware for Zoho MCP Server."""
 
 import logging
-from typing import Any, Dict, List, Optional, Union
 import time
+from typing import Any, Dict, List, Optional
 
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
@@ -35,7 +35,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         self.bypass_paths = bypass_paths or ["/health", "/docs", "/openapi.json"]
 
         # In-memory storage for rate limiting (use Redis in production)
-        self.clients: Dict[str, dict[str, float]] = {}
+        self.clients: Dict[str, Dict[str, Any]] = {}
 
         logger.info(f"Rate limiting initialized: {calls} calls per {period} seconds")
 

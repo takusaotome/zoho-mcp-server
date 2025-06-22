@@ -1,7 +1,8 @@
 """Pytest configuration for E2E tests."""
 
-import pytest
 import os
+
+import pytest
 from fastapi.testclient import TestClient
 
 
@@ -10,11 +11,11 @@ def client():
     """Create test client for the application."""
     # Import here to avoid circular imports
     from server.main import app
-    
+
     # Configure test environment
     os.environ["TESTING"] = "true"
     os.environ["LOG_LEVEL"] = "DEBUG"
-    
+
     return TestClient(app)
 
 
@@ -51,7 +52,7 @@ def test_task_data():
 def test_file_data():
     """Provide test file data."""
     import base64
-    
+
     mock_content = "# Test Document\n\nThis is a test document for E2E testing."
     return {
         "name": "test_document.md",
@@ -86,11 +87,11 @@ def pytest_collection_modifyitems(config, items):
         # Add e2e marker to all tests in e2e directory
         if "e2e" in str(item.fspath):
             item.add_marker(pytest.mark.e2e)
-        
+
         # Add slow marker to performance tests
         if "performance" in str(item.fspath) or "locust" in str(item.fspath):
             item.add_marker(pytest.mark.slow)
-        
+
         # Add integration marker to integration tests
         if "integration" in str(item.fspath):
             item.add_marker(pytest.mark.integration)
@@ -106,16 +107,16 @@ def setup_test_environment():
         "ZOHO_TEST_PROJECT_ID": "test_project_123",
         "ZOHO_TEST_FOLDER_ID": "test_folder_123"
     }
-    
+
     original_values = {}
-    
+
     # Set test environment variables
     for key, value in test_env_vars.items():
         original_values[key] = os.environ.get(key)
         os.environ[key] = value
-    
+
     yield
-    
+
     # Restore original environment variables
     for key, original_value in original_values.items():
         if original_value is None:
@@ -138,7 +139,7 @@ def mock_zoho_responses():
                     "due_date": "2025-07-01"
                 },
                 {
-                    "id": "task_002", 
+                    "id": "task_002",
                     "name": "Test Task 2",
                     "status": "closed",
                     "owner": "test2@example.com",
@@ -218,12 +219,12 @@ def pytest_runtest_setup(item):
     if item.get_closest_marker("real_api"):
         if not os.getenv("ZOHO_E2E_TESTS_ENABLED", "false").lower() == "true":
             pytest.skip("Real API E2E tests disabled")
-    
+
     # Skip slow tests in CI unless explicitly requested
     if item.get_closest_marker("slow"):
         if os.getenv("CI") and not os.getenv("RUN_SLOW_TESTS"):
             pytest.skip("Slow tests skipped in CI")
-    
+
     # Skip stress tests unless explicitly requested
     if item.get_closest_marker("stress"):
         if not os.getenv("RUN_STRESS_TESTS"):
@@ -235,7 +236,7 @@ def pytest_runtest_setup(item):
 def cleanup_test_data():
     """Cleanup test data after each test."""
     yield
-    
+
     # In a real implementation, this would clean up:
     # - Created tasks
     # - Uploaded files

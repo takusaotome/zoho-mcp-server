@@ -1,7 +1,7 @@
 """MCP (Model Context Protocol) handler for JSON-RPC requests."""
 
 import logging
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict, Optional
 
 from pydantic import BaseModel, ValidationError
 
@@ -27,7 +27,7 @@ class MCPResponse(BaseModel):
     result: Optional[Any] = None
     error: Optional[Dict[str, Any]] = None
     id: Optional[Any] = None
-    
+
     def model_dump(self, **kwargs) -> Dict[str, Any]:
         """Custom model dump that excludes null error field."""
         data = super().model_dump(**kwargs)
@@ -47,7 +47,7 @@ class MCPError:
     INTERNAL_ERROR = -32603
 
     @staticmethod
-    def create_error(code: int, message: str, data: Any = None) -> Dict[str, Any]:
+    def create_error(code: int, message: str, data: Any = None) -> dict[str, Any]:
         """Create MCP error response.
 
         Args:
@@ -76,7 +76,7 @@ class MCPHandler:
         self.tools = {
             # Project management tools
             "listProjects": self.task_handler.list_projects,
-            
+
             # Task management tools
             "listTasks": self.task_handler.list_tasks,
             "createTask": self.task_handler.create_task,
@@ -93,9 +93,12 @@ class MCPHandler:
             "getWorkspacesAndTeams": self.file_handler.get_workspaces_and_teams,
         }
 
+        # Track processed requests to prevent duplicates
+        self.processed_requests = set()
+        
         logger.info(f"MCP handler initialized with {len(self.tools)} tools")
 
-    async def handle_request(self, raw_request: Dict[str, Any]) -> Dict[str, Any]:
+    async def handle_request(self, raw_request: dict[str, Any]) -> dict[str, Any]:
         """Handle incoming MCP JSON-RPC request.
 
         Args:
@@ -162,7 +165,7 @@ class MCPHandler:
                 id=request_id
             ).model_dump()
 
-    async def _handle_call_tool(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_call_tool(self, request: MCPRequest) -> dict[str, Any]:
         """Handle callTool method.
 
         Args:
@@ -175,22 +178,44 @@ class MCPHandler:
             params = request.params or {}
             tool_name = params.get("name")
             tool_arguments = params.get("arguments", {})
+            
+            # Extract progressToken and _meta (these are MCP client metadata)
+            progress_token = None
+            if "_meta" in tool_arguments:
+                meta = tool_arguments.pop("_meta")
+                progress_token = meta.get("progressToken")
+            if "progressToken" in tool_arguments:
+                progress_token = tool_arguments.pop("progressToken")
+            
+            # Log progress token for debugging
+            if progress_token is not None:
+                logger.info(f"Processing request with progressToken: {progress_token}")
 
             if not tool_name:
                 return MCPResponse(
-                    error=MCPError.create_error(
-                        MCPError.INVALID_PARAMS,
-                        "Missing tool name"
-                    ),
+                    result={
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": "Error: Missing tool name"
+                            }
+                        ],
+                        "isError": True
+                    },
                     id=request.id
                 ).model_dump()
 
             if tool_name not in self.tools:
                 return MCPResponse(
-                    error=MCPError.create_error(
-                        MCPError.METHOD_NOT_FOUND,
-                        f"Tool '{tool_name}' not found"
-                    ),
+                    result={
+                        "content": [
+                            {
+                                "type": "text",
+                                "text": f"Error: Tool '{tool_name}' not found"
+                            }
+                        ],
+                        "isError": True
+                    },
                     id=request.id
                 ).model_dump()
 
@@ -199,39 +224,76 @@ class MCPHandler:
             tool_function = self.tools[tool_name]
             result = await tool_function(**tool_arguments)
 
+            # Format result properly for MCP
+            if isinstance(result, dict):
+                # For structured data, return as JSON text
+                import json
+                result_text = json.dumps(result, indent=2, ensure_ascii=False)
+                logger.info(f"Response size: {len(result_text)} bytes")
+            else:
+                result_text = str(result)
+
+            # MCP tools/call response format
+            response_data = {
+                "content": [
+                    {
+                        "type": "text",
+                        "text": result_text
+                    }
+                ]
+            }
+            
+            # If progressToken was provided, indicate completion
+            if progress_token is not None:
+                logger.info(f"Completing request with progressToken: {progress_token}")
+                # Add completion metadata to signal the client that processing is done
+                response_data["_meta"] = {
+                    "progressToken": progress_token,
+                    "progress": 1.0,  # 100% complete
+                    "completed": True
+                }
+            
+            # Add isError flag for MCP compatibility (optional)
+            if hasattr(self, '_is_error') and self._is_error:
+                response_data["isError"] = True
+            
             return MCPResponse(
-                result={
-                    "content": [
-                        {
-                            "type": "text",
-                            "text": str(result)
-                        }
-                    ]
-                },
+                result=response_data,
                 id=request.id
             ).model_dump()
 
         except TypeError as e:
             logger.error(f"Invalid tool arguments: {e}")
             return MCPResponse(
-                error=MCPError.create_error(
-                    MCPError.INVALID_PARAMS,
-                    f"Invalid tool arguments: {e}"
-                ),
+                result={
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"Error: Invalid tool arguments: {e}"
+                        }
+                    ],
+                    "isError": True
+                },
                 id=request.id
             ).model_dump()
 
         except Exception as e:
             logger.error(f"Tool execution failed: {e}")
+            # Return error as content for MCP compatibility
             return MCPResponse(
-                error=MCPError.create_error(
-                    MCPError.INTERNAL_ERROR,
-                    f"Tool execution failed: {e}"
-                ),
+                result={
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": f"Error: Tool execution failed: {e}"
+                        }
+                    ],
+                    "isError": True
+                },
                 id=request.id
             ).model_dump()
 
-    async def _handle_tools_list(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_tools_list(self, request: MCPRequest) -> dict[str, Any]:
         """Handle tools/list method for MCP protocol.
 
         Args:
@@ -241,7 +303,7 @@ class MCPHandler:
             List of available tools in MCP format
         """
         tools_list = []
-        
+
         # Define tool schemas for MCP compatibility
         tool_schemas = {
             "listProjects": {
@@ -260,7 +322,10 @@ class MCPHandler:
                     "type": "object",
                     "properties": {
                         "project_id": {"type": "string", "description": "Project ID"},
-                        "status": {"type": "string", "enum": ["open", "closed", "overdue"], "description": "Task status filter"}
+                        "status": {"type": "string", "enum": ["open", "closed", "overdue"], "description": "Task status filter (applied after fetching all tasks)"},
+                        "get_all": {"type": "boolean", "description": "If true, fetch all tasks using pagination (default: true)", "default": True},
+                        "index": {"type": "integer", "description": "Starting index for pagination (1-based, default: 1)", "default": 1},
+                        "range": {"type": "integer", "description": "Number of tasks per page (max 200, default: 200)", "default": 200}
                     },
                     "required": ["project_id"]
                 }
@@ -292,7 +357,7 @@ class MCPHandler:
                 }
             }
         }
-        
+
         # Create tools list with proper schemas
         for tool_name in self.tools.keys():
             if tool_name in tool_schemas:
@@ -314,7 +379,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_list_tools(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_list_tools(self, request: MCPRequest) -> dict[str, Any]:
         """Handle listTools method (legacy).
 
         Args:
@@ -336,7 +401,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_initialize(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_initialize(self, request: MCPRequest) -> dict[str, Any]:
         """Handle initialize method for MCP protocol setup.
 
         Args:
@@ -346,10 +411,10 @@ class MCPHandler:
             Initialization response
         """
         logger.info("MCP protocol initialization requested")
-        
+
         # Get client protocol version from request
         client_version = request.params.get("protocolVersion", "2024-11-05") if request.params else "2024-11-05"
-        
+
         return MCPResponse(
             result={
                 "protocolVersion": client_version,  # Match client version
@@ -368,7 +433,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_tools_call(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_tools_call(self, request: MCPRequest) -> dict[str, Any]:
         """Handle tools/call method (alias for callTool).
 
         Args:
@@ -380,7 +445,7 @@ class MCPHandler:
         # Delegate to existing callTool handler
         return await self._handle_call_tool(request)
 
-    async def _handle_resources_list(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_resources_list(self, request: MCPRequest) -> dict[str, Any]:
         """Handle resources/list method for MCP protocol.
 
         Args:
@@ -394,7 +459,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_prompts_list(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_prompts_list(self, request: MCPRequest) -> dict[str, Any]:
         """Handle prompts/list method for MCP protocol.
 
         Args:
@@ -408,7 +473,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_initialized(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_initialized(self, request: MCPRequest) -> dict[str, Any]:
         """Handle initialized notification.
 
         Args:
@@ -421,7 +486,7 @@ class MCPHandler:
         # Notifications should not return a response
         return None
 
-    async def _handle_ping(self, request: MCPRequest) -> Dict[str, Any]:
+    async def _handle_ping(self, request: MCPRequest) -> dict[str, Any]:
         """Handle ping method for health check.
 
         Args:

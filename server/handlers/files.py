@@ -2,7 +2,7 @@
 
 import base64
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional
 
 from pydantic import BaseModel
 
@@ -31,7 +31,7 @@ class FileHandler:
         self.api_client = ZohoAPIClient()
         logger.info("File handler initialized")
 
-    async def download_file(self, file_id: str) -> Dict[str, Any]:
+    async def download_file(self, file_id: str) -> dict[str, Any]:
         """Download a file from WorkDrive.
 
         Args:
@@ -84,7 +84,7 @@ class FileHandler:
         folder_id: str,
         name: str,
         content_base64: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Upload a review sheet to WorkDrive.
 
         Args:
@@ -159,7 +159,7 @@ class FileHandler:
         self,
         query: str,
         folder_id: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Search files in WorkDrive.
 
         Args:
@@ -188,7 +188,7 @@ class FileHandler:
                     params = {}
                     if query:
                         params["q"] = query  # Try different parameter names
-                    
+
                     response = await self.api_client.get(
                         endpoint,
                         params=params,
@@ -208,7 +208,7 @@ class FileHandler:
                 logger.info("Search endpoints failed, falling back to file listing with filter")
                 all_files_result = await self.list_files(limit=100)
                 all_files = all_files_result.get("files", [])
-                
+
                 # Filter files by query if provided
                 filtered_files = []
                 if query:
@@ -267,7 +267,7 @@ class FileHandler:
             logger.error(f"Failed to search files with query '{query}': {e}")
             raise
 
-    async def get_file_info(self, file_id: str) -> Dict[str, Any]:
+    async def get_file_info(self, file_id: str) -> dict[str, Any]:
         """Get file information.
 
         Args:
@@ -308,7 +308,7 @@ class FileHandler:
         self,
         folder_id: str,
         file_type: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List contents of a folder.
 
         Args:
@@ -370,7 +370,7 @@ class FileHandler:
         self,
         limit: int = 50,
         offset: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List files from WorkDrive.
 
         Args:
@@ -475,7 +475,7 @@ class FileHandler:
             logger.error(f"Failed to list files from WorkDrive: {e}")
             raise
 
-    async def get_workdrive_info(self) -> Dict[str, Any]:
+    async def get_workdrive_info(self) -> dict[str, Any]:
         """Get WorkDrive account information.
 
         Returns:
@@ -521,7 +521,7 @@ class FileHandler:
         team_id: Optional[str] = None,
         folder_id: Optional[str] = None,
         limit: int = 50
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """List files from a specific team or folder in WorkDrive.
 
         Args:
@@ -537,7 +537,7 @@ class FileHandler:
 
             # Build endpoint based on provided parameters
             endpoints_to_try = []
-            
+
             if folder_id:
                 # Try folder-specific endpoints based on Joel Lipman's documentation
                 endpoints_to_try.extend([
@@ -545,7 +545,7 @@ class FileHandler:
                     f"/files/{folder_id}/files",
                     f"/folders/{folder_id}/files"
                 ])
-            
+
             if team_id:
                 # Try team-specific endpoints based on Joel Lipman's documentation
                 # The team_id from URL might actually be a team folder ID
@@ -553,7 +553,7 @@ class FileHandler:
                     f"/teamfolders/{team_id}/folders",
                     f"/teamfolders/{team_id}/files"
                 ])
-            
+
             # Fallback to general endpoints
             endpoints_to_try.extend([
                 "/files",
@@ -569,7 +569,7 @@ class FileHandler:
                     headers = {
                         "Accept": "application/vnd.api+json"
                     }
-                    
+
                     # Start with no parameters to test basic endpoint access
                     params = None
                     if "/teamfolders/" not in endpoint and limit and limit > 0:
@@ -578,7 +578,7 @@ class FileHandler:
                             "page[limit]": min(limit, 50),
                             "page[offset]": 0
                         }
-                    
+
                     response = await self.api_client.get(
                         endpoint,
                         params=params,
@@ -647,7 +647,7 @@ class FileHandler:
             logger.error(f"Failed to list team/folder files: {e}")
             raise
 
-    async def get_workspaces_and_teams(self) -> Dict[str, Any]:
+    async def get_workspaces_and_teams(self) -> dict[str, Any]:
         """Get available workspaces and teams from WorkDrive.
 
         Returns:
@@ -666,13 +666,13 @@ class FileHandler:
             ]
 
             results = {}
-            
+
             for endpoint in endpoints_to_try:
                 try:
                     headers = {
                         "Accept": "application/vnd.api+json"
                     }
-                    
+
                     response = await self.api_client.get(
                         endpoint,
                         headers=headers,
@@ -682,7 +682,7 @@ class FileHandler:
                     if response and response.get("data"):
                         results[endpoint] = response
                         logger.info(f"Successfully retrieved data from endpoint: {endpoint}")
-                    
+
                 except Exception as e:
                     logger.warning(f"Endpoint {endpoint} failed: {e}")
                     continue
@@ -697,7 +697,7 @@ class FileHandler:
             logger.error(f"Failed to get workspaces and teams: {e}")
             raise
 
-    async def list_team_folders(self, team_id: Optional[str] = None) -> Dict[str, Any]:
+    async def list_team_folders(self, team_id: Optional[str] = None) -> dict[str, Any]:
         """List team folders from WorkDrive.
 
         Args:
@@ -714,31 +714,31 @@ class FileHandler:
 
             # Try different endpoints based on Zoho WorkDrive API documentation
             endpoints_to_try = []
-            
+
             # Start with user info to get workspace information
             endpoints_to_try.append("/users/me")
-            
+
             if team_id:
                 # If team_id provided, assume it's a team folder ID and get subfolders
                 endpoints_to_try.extend([
                     f"/teamfolders/{team_id}/folders",
                     f"/files/{team_id}/files"  # Alternative if teamfolders doesn't work
                 ])
-            
+
             # Try to discover available team folders through different approaches
             # Note: Zoho WorkDrive API may not have a direct "list all team folders" endpoint
-            
+
             team_folders = []
             successful_endpoints = 0
             results = {}
-            
+
             for endpoint in endpoints_to_try:
                 try:
                     # Required headers for Zoho WorkDrive API
                     headers = {
                         "Accept": "application/vnd.api+json"
                     }
-                    
+
                     params = {}
                     if "/teamfolders/" in endpoint and not team_id:
                         # Skip team-specific endpoints if no team_id provided
@@ -749,18 +749,18 @@ class FileHandler:
                             "page[limit]": 50,
                             "page[offset]": 0
                         }
-                    
+
                     response = await self.api_client.get(
                         endpoint,
                         params=params,
                         headers=headers,
                         use_workdrive=True
                     )
-                    
+
                     if response and 'data' in response:
                         results[endpoint] = response
                         successful_endpoints += 1
-                        
+
                         # Extract team folder information
                         data = response['data']
                         if isinstance(data, list):
@@ -778,9 +778,9 @@ class FileHandler:
                                 folder_info = self._extract_folder_info(data)
                                 if folder_info:
                                     team_folders.append(folder_info)
-                        
+
                         logger.info(f"Successfully retrieved data from endpoint: {endpoint}")
-                    
+
                 except Exception as e:
                     logger.debug(f"Endpoint {endpoint} failed: {e}")
                     continue
@@ -791,10 +791,10 @@ class FileHandler:
                 folder_id = folder.get('id')
                 if folder_id and folder_id not in unique_folders:
                     unique_folders[folder_id] = folder
-            
+
             team_folders = list(unique_folders.values())
 
-            # If no team folders found and no team_id was provided, 
+            # If no team folders found and no team_id was provided,
             # try to provide helpful information about available workspaces
             if not team_folders and not team_id:
                 logger.info("No team folders found directly, trying workspace discovery")
@@ -816,7 +816,7 @@ class FileHandler:
             logger.error(f"Failed to list team folders: {e}")
             raise
 
-    def _extract_folder_info(self, folder_data: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    def _extract_folder_info(self, folder_data: dict[str, Any]) -> Optional[dict[str, Any]]:
         """Extract relevant folder information from API response.
 
         Args:
@@ -831,7 +831,7 @@ class FileHandler:
                 return None
 
             attributes = folder_data.get('attributes', {})
-            
+
             folder_info = {
                 'id': folder_id,
                 'name': attributes.get('name', 'Unknown'),
@@ -844,10 +844,10 @@ class FileHandler:
             # Add additional attributes if available
             if 'parent_id' in attributes:
                 folder_info['parent_id'] = attributes['parent_id']
-            
+
             if 'description' in attributes:
                 folder_info['description'] = attributes['description']
-            
+
             if 'permissions' in attributes:
                 folder_info['permissions'] = attributes['permissions']
 
@@ -855,16 +855,16 @@ class FileHandler:
             folder_type = folder_data.get('type', '').lower()
             if 'team' in folder_type or 'shared' in folder_type:
                 folder_info['is_team_folder'] = True
-            
+
             return folder_info
 
         except Exception as e:
             logger.debug(f"Failed to extract folder info: {e}")
             return None
 
-    def _extract_workspace_info(self, user_data: Dict[str, Any], results: Dict[str, Any], endpoint: str) -> None:
+    def _extract_workspace_info(self, user_data: dict[str, Any], results: dict[str, Any], endpoint: str) -> None:
         """Extract workspace information from user data.
-        
+
         Args:
             user_data: User data from /users/me endpoint
             results: Results dictionary to update
@@ -873,7 +873,7 @@ class FileHandler:
         try:
             # Extract workspace/team information from user data
             attributes = user_data.get('attributes', {})
-            
+
             # Look for workspace or team-related information
             workspace_info = {
                 'user_id': user_data.get('id'),
@@ -883,21 +883,21 @@ class FileHandler:
                 'workspace_count': attributes.get('workspace_count', 0),
                 'team_count': attributes.get('team_count', 0)
             }
-            
+
             # Add to results for debugging
             results[f"{endpoint}_workspace_info"] = workspace_info
-            
+
         except Exception as e:
             logger.debug(f"Failed to extract workspace info: {e}")
 
-    async def _discover_workspaces(self) -> Dict[str, Any]:
+    async def _discover_workspaces(self) -> dict[str, Any]:
         """Try to discover available workspaces and team folders.
-        
+
         Returns:
             Dictionary with discovery results
         """
         discovery_results = {}
-        
+
         try:
             # Try alternative endpoints for workspace discovery
             discovery_endpoints = [
@@ -905,28 +905,28 @@ class FileHandler:
                 "/privatefolders",  # Private folders
                 "/sharedfolders"  # Shared folders
             ]
-            
+
             for endpoint in discovery_endpoints:
                 try:
                     headers = {
                         "Accept": "application/vnd.api+json"
                     }
-                    
+
                     response = await self.api_client.get(
                         endpoint,
                         headers=headers,
                         use_workdrive=True
                     )
-                    
+
                     if response and 'data' in response:
                         discovery_results[f"discovery_{endpoint}"] = response
                         logger.info(f"Discovery endpoint {endpoint} returned data")
-                    
+
                 except Exception as e:
                     logger.debug(f"Discovery endpoint {endpoint} failed: {e}")
                     continue
-            
+
         except Exception as e:
             logger.debug(f"Workspace discovery failed: {e}")
-        
+
         return discovery_results

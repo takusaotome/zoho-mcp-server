@@ -2,7 +2,7 @@
 
 import logging
 from datetime import date, datetime
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Optional, Union
 
 from pydantic import BaseModel, ValidationError
 
@@ -16,10 +16,10 @@ class Task(BaseModel):
 
     id: Union[str, int]
     name: str
-    status: Union[str, Dict[str, Any]]
+    status: Union[str, dict[str, Any]]
     owner: Optional[str] = None
-    due_date: Optional[Union[str, date]] = None
-    created_at: Optional[Union[str, datetime]] = None
+    due_date: Union[str, Optional[date]] = None
+    created_at: Union[str, Optional[datetime]] = None
     description: Optional[str] = None
     url: Optional[str] = None
 
@@ -43,7 +43,7 @@ class TaskHandler:
         self.api_client = ZohoAPIClient()
         logger.info("Task handler initialized")
 
-    async def list_projects(self) -> Dict[str, Any]:
+    async def list_projects(self) -> dict[str, Any]:
         """List all available Zoho projects.
 
         Returns:
@@ -98,19 +98,26 @@ class TaskHandler:
     async def list_tasks(
         self,
         project_id: str,
-        status: Optional[str] = None
-    ) -> Dict[str, Any]:
+        status: Optional[str] = None,
+        get_all: bool = True,
+        index: int = 1,
+        range: int = 200,
+        summary_only: bool = False
+    ) -> dict[str, Any]:
         """List tasks from a Zoho project.
 
         Args:
             project_id: Zoho project ID
-            status: Optional status filter (open, closed, overdue)
+            status: Optional status filter (open, closed, overdue) - Note: Not supported by API
+            get_all: If True, fetch all tasks using pagination
+            index: Starting index for pagination (1-based)
+            range: Number of tasks per page (max 200)
 
         Returns:
             List of tasks
         """
         try:
-            logger.info(f"Listing tasks for project {project_id}, status: {status}")
+            logger.info(f"Listing tasks for project {project_id}, status: {status}, get_all: {get_all}")
 
             # Build API endpoint with portal ID
             import os
@@ -118,67 +125,179 @@ class TaskHandler:
             if not portal_id:
                 raise ValueError("ZOHO_PORTAL_ID environment variable is not set")
             endpoint = f"/portal/{portal_id}/projects/{project_id}/tasks/"
-            params = {}
 
-            if status:
-                if status not in ["open", "closed", "overdue"]:
-                    raise ValueError(f"Invalid status: {status}")
-                params["status"] = status
+            all_tasks = []
 
-            # Make API request
-            response = await self.api_client.get(endpoint, params=params)
+            if get_all:
+                # Fetch all tasks using pagination with safety limits
+                current_index = 1
+                page_size = 200  # Maximum allowed by API
+                max_pages = 20  # Safety limit: 20 pages * 200 = 4000 tasks max
+                page_count = 0
 
-            # Parse tasks
-            tasks_data = response.get("tasks", [])
-            tasks = []
+                while page_count < max_pages:
+                    page_count += 1
+                    params = {
+                        "index": current_index,
+                        "range": page_size
+                    }
 
-            for task_data in tasks_data:
-                try:
-                    # IDを文字列に変換
-                    task_id = str(task_data["id"])
-                    
-                    # ステータスを処理
-                    status_data = task_data.get("status", "open")
-                    if isinstance(status_data, dict):
-                        status = status_data.get("name", "Unknown")
+                    # Note: Status filtering is not supported by Zoho API
+                    # It returns error code 6832 if status parameter is used
+
+                    logger.info(f"Fetching tasks page {page_count}: index={current_index}, range={page_size}")
+
+                    try:
+                        response = await self.api_client.get(endpoint, params=params)
+                        tasks_data = response.get("tasks", [])
+
+                        if not tasks_data:
+                            logger.info(f"No more tasks found at page {page_count}")
+                            break
+
+                        # Process tasks for this page
+                        page_tasks = []
+                        for task_data in tasks_data:
+                            try:
+                                # IDを文字列に変換
+                                task_id = str(task_data["id"])
+
+                                # ステータスを処理
+                                status_data = task_data.get("status", "open")
+                                if isinstance(status_data, dict):
+                                    task_status = status_data.get("name", "Unknown")
+                                else:
+                                    task_status = str(status_data)
+
+                                # オーナー情報を処理
+                                owner_data = task_data.get("owner", {})
+                                if isinstance(owner_data, dict):
+                                    owner = owner_data.get("name")
+                                else:
+                                    owner = str(owner_data) if owner_data else None
+
+                                task = Task(
+                                    id=task_id,
+                                    name=task_data["name"],
+                                    status=task_status,
+                                    owner=owner,
+                                    due_date=task_data.get("due_date"),
+                                    created_at=task_data.get("created_time"),
+                                    description=task_data.get("description"),
+                                    url=task_data.get("link", {}).get("self", {}).get("url")
+                                )
+                                page_tasks.append(task.model_dump())
+                            except ValidationError as e:
+                                logger.warning(f"Invalid task data: {e}")
+                                logger.debug(f"Task data: {task_data}")
+                                continue
+                            except Exception as e:
+                                logger.error(f"Error processing task data: {e}")
+                                logger.debug(f"Task data: {task_data}")
+                                continue
+
+                        all_tasks.extend(page_tasks)
+                        logger.info(f"Retrieved {len(page_tasks)} tasks from page {page_count} (total: {len(all_tasks)})")
+
+                        # Check if we got fewer tasks than requested (last page)
+                        if len(tasks_data) < page_size:
+                            logger.info(f"Last page reached (got {len(tasks_data)} < {page_size})")
+                            break
+
+                        current_index += page_size
+
+                    except Exception as e:
+                        logger.error(f"Error fetching page {page_count}: {e}")
+                        break
+
+                if page_count >= max_pages:
+                    logger.warning(f"Reached maximum page limit ({max_pages}), may not have fetched all tasks")
+
+                # Apply status filter after fetching all tasks (since API doesn't support it)
+                if status:
+                    if status == "open":
+                        filtered_tasks = [t for t in all_tasks if t["status"].lower() in ["open", "in progress", "in review", "pending"]]
+                    elif status == "closed":
+                        filtered_tasks = [t for t in all_tasks if t["status"].lower() == "closed"]
+                    elif status == "overdue":
+                        # Check for overdue tasks (tasks with due_date in the past)
+                        today = datetime.now().date()
+                        filtered_tasks = []
+                        for task in all_tasks:
+                            if task.get("due_date"):
+                                try:
+                                    due_date = datetime.strptime(task["due_date"], "%m-%d-%Y").date()
+                                    if due_date < today and task["status"].lower() != "closed":
+                                        filtered_tasks.append(task)
+                                except (ValueError, KeyError) as e:
+                                    logger.warning(f"Invalid date format in task {task.get('id', 'unknown')}: {e}")
+                                    continue
                     else:
-                        status = str(status_data)
-                    
-                    # オーナー情報を処理
-                    owner_data = task_data.get("owner", {})
-                    if isinstance(owner_data, dict):
-                        owner = owner_data.get("name")
-                    else:
-                        owner = str(owner_data) if owner_data else None
-                    
-                    task = Task(
-                        id=task_id,
-                        name=task_data["name"],
-                        status=status,
-                        owner=owner,
-                        due_date=task_data.get("due_date"),
-                        created_at=task_data.get("created_time"),
-                        description=task_data.get("description"),
-                        url=task_data.get("link", {}).get("self", {}).get("url")
-                    )
-                    tasks.append(task.model_dump())
-                except ValidationError as e:
-                    logger.warning(f"Invalid task data: {e}")
-                    logger.debug(f"Task data: {task_data}")
-                    continue
-                except Exception as e:
-                    logger.error(f"Error processing task data: {e}")
-                    logger.debug(f"Task data: {task_data}")
-                    continue
+                        raise ValueError(f"Invalid status: {status}")
+
+                    all_tasks = filtered_tasks
+
+            else:
+                # Single page fetch
+                params = {
+                    "index": index,
+                    "range": range
+                }
+
+                response = await self.api_client.get(endpoint, params=params)
+                tasks_data = response.get("tasks", [])
+
+                for task_data in tasks_data:
+                    try:
+                        # IDを文字列に変換
+                        task_id = str(task_data["id"])
+
+                        # ステータスを処理
+                        status_data = task_data.get("status", "open")
+                        if isinstance(status_data, dict):
+                            task_status = status_data.get("name", "Unknown")
+                        else:
+                            task_status = str(status_data)
+
+                        # オーナー情報を処理
+                        owner_data = task_data.get("owner", {})
+                        if isinstance(owner_data, dict):
+                            owner = owner_data.get("name")
+                        else:
+                            owner = str(owner_data) if owner_data else None
+
+                        task = Task(
+                            id=task_id,
+                            name=task_data["name"],
+                            status=task_status,
+                            owner=owner,
+                            due_date=task_data.get("due_date"),
+                            created_at=task_data.get("created_time"),
+                            description=task_data.get("description"),
+                            url=task_data.get("link", {}).get("self", {}).get("url")
+                        )
+                        all_tasks.append(task.model_dump())
+                    except ValidationError as e:
+                        logger.warning(f"Invalid task data: {e}")
+                        logger.debug(f"Task data: {task_data}")
+                        continue
+                    except Exception as e:
+                        logger.error(f"Error processing task data: {e}")
+                        logger.debug(f"Task data: {task_data}")
+                        continue
 
             result = {
+                "success": True,
+                "message": f"Successfully retrieved {len(all_tasks)} tasks from project {project_id}",
                 "project_id": project_id,
-                "tasks": tasks,
-                "total_count": len(tasks),
-                "status_filter": status
+                "tasks": all_tasks,
+                "total_count": len(all_tasks),
+                "status_filter": status,
+                "pagination_used": get_all,
+                "completed_at": datetime.now().isoformat()
             }
 
-            logger.info(f"Retrieved {len(tasks)} tasks for project {project_id}")
+            logger.info(f"Retrieved {len(all_tasks)} tasks for project {project_id}")
             return result
 
         except Exception as e:
@@ -191,7 +310,7 @@ class TaskHandler:
         name: str,
         owner: Optional[str] = None,
         due_date: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Create a new task in Zoho project.
 
         Args:
@@ -258,7 +377,7 @@ class TaskHandler:
         status: Optional[str] = None,
         due_date: Optional[str] = None,
         owner: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Update an existing task.
 
         Args:
@@ -313,7 +432,7 @@ class TaskHandler:
             logger.error(f"Failed to update task {task_id}: {e}")
             raise
 
-    async def get_task_detail(self, task_id: str) -> Dict[str, Any]:
+    async def get_task_detail(self, task_id: str) -> dict[str, Any]:
         """Get detailed information about a task.
 
         Args:
@@ -367,7 +486,7 @@ class TaskHandler:
         self,
         project_id: str,
         period: Optional[str] = None
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """Get project summary with completion rate and KPIs.
 
         Args:

@@ -1,12 +1,9 @@
 """Step definitions for file management scenarios."""
 
-import pytest
-import json
 import base64
-from pytest_bdd import scenarios, given, when, then, parsers
-from fastapi.testclient import TestClient
-from typing import Dict, Any
 
+import pytest
+from pytest_bdd import given, parsers, scenarios, then, when
 
 # Load scenarios from feature file
 scenarios('../features/file_management.feature')
@@ -14,7 +11,7 @@ scenarios('../features/file_management.feature')
 
 class FileTestContext:
     """Context for file-related test data."""
-    
+
     def __init__(self):
         self.client = None
         self.response = None
@@ -57,7 +54,7 @@ def workdrive_has_test_files(file_context: FileTestContext):
 def search_files_with_query(query: str, file_context: FileTestContext):
     """Search files with specific query."""
     file_context.search_query = query
-    
+
     search_request = {
         "jsonrpc": "2.0",
         "method": "callTool",
@@ -69,7 +66,7 @@ def search_files_with_query(query: str, file_context: FileTestContext):
         },
         "id": "bdd_search_files_001"
     }
-    
+
     file_context.response = file_context.client.post("/mcp", json=search_request)
 
 
@@ -87,7 +84,7 @@ def results_contain_file_info(file_context: FileTestContext):
     """Verify results contain file name, ID, and path."""
     data = file_context.response.json()
     result_text = data["result"]["content"][0]["text"]
-    
+
     # Check for file information fields
     text_lower = result_text.lower()
     assert any(field in text_lower for field in ["name", "ファイル名"])
@@ -117,7 +114,7 @@ def search_files_in_folder(folder_id: str, file_context: FileTestContext):
         },
         "id": "bdd_search_folder_001"
     }
-    
+
     file_context.response = file_context.client.post("/mcp", json=search_request)
 
 
@@ -158,7 +155,7 @@ def execute_download_file(file_context: FileTestContext):
         },
         "id": "bdd_download_001"
     }
-    
+
     file_context.response = file_context.client.post("/mcp", json=download_request)
 
 
@@ -168,7 +165,7 @@ def presigned_url_returned(file_context: FileTestContext):
     assert file_context.response.status_code == 200
     data = file_context.response.json()
     assert "result" in data
-    
+
     result_text = data["result"]["content"][0]["text"]
     assert any(term in result_text.lower() for term in ["url", "link", "download"])
 
@@ -219,7 +216,7 @@ def execute_upload_review_sheet(file_context: FileTestContext):
         },
         "id": "bdd_upload_001"
     }
-    
+
     file_context.response = file_context.client.post("/mcp", json=upload_request)
 
 

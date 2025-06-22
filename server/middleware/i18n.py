@@ -1,7 +1,7 @@
 """Internationalization middleware for Zoho MCP Server."""
 
 import logging
-from typing import Any, Dict, List, Optional, Union
+from typing import Any
 
 from babel.support import Translations
 from fastapi import Request
@@ -16,7 +16,7 @@ class I18nManager:
         """Initialize i18n manager."""
         self.supported_locales = ["en", "ja"]
         self.default_locale = "en"
-        self.translations: Dict[str, Optional[Translations]] = {}
+        self.translations: dict[str, Optional[Translations]] = {}
 
         # Initialize translations
         self._load_translations()

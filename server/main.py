@@ -3,14 +3,15 @@
 import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
+from typing import Optional
 
-from fastapi import FastAPI, Request, Depends, HTTPException, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, HTMLResponse
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from server.auth.ip_allowlist import IPAllowlistMiddleware
-from server.auth.jwt_handler import jwt_handler, TokenData
+from server.auth.jwt_handler import TokenData, jwt_handler
 from server.auth.oauth_handler import oauth_handler
 from server.core.config import settings
 from server.core.mcp_handler import MCPHandler
@@ -101,7 +102,7 @@ def create_app() -> FastAPI:
         }
 
     @app.get("/auth/callback")
-    async def oauth_callback(code: str = None, error: str = None) -> HTMLResponse:
+    async def oauth_callback(code: Optional[str] = None, error: Optional[str] = None) -> HTMLResponse:
         """Handle OAuth callback from Zoho."""
         if error:
             logger.error(f"OAuth error: {error}")
@@ -165,12 +166,12 @@ def create_app() -> FastAPI:
             # Exchange code for tokens
             logger.info("Processing OAuth callback...")
             result = await oauth_handler.exchange_code_for_token(code)
-            
+
             if result["success"]:
                 # Update .env file with new refresh token
                 refresh_token = result["refresh_token"]
                 env_updated = await oauth_handler.update_env_file(refresh_token)
-                
+
                 if env_updated:
                     return HTMLResponse(
                         content=f"""
@@ -194,7 +195,7 @@ def create_app() -> FastAPI:
                                 <div class="icon">✅</div>
                                 <h1 class="success">認証成功！</h1>
                                 <p>Zoho OAuth認証が正常に完了しました。</p>
-                                
+
                                 <div class="info">
                                     <h3>取得した情報:</h3>
                                     <ul>
@@ -204,7 +205,7 @@ def create_app() -> FastAPI:
                                         <li><strong>API Domain:</strong> {result.get('api_domain', 'N/A')}</li>
                                     </ul>
                                 </div>
-                                
+
                                 <div class="next-steps">
                                     <h3>🎯 次のステップ:</h3>
                                     <ol>
@@ -213,7 +214,7 @@ def create_app() -> FastAPI:
                                         <li>Zoho Projects APIの機能が利用可能になりました</li>
                                     </ol>
                                 </div>
-                                
+
                                 <p><small>このウィンドウは安全に閉じることができます。</small></p>
                             </div>
                         </body>
@@ -276,7 +277,7 @@ def create_app() -> FastAPI:
                     """,
                     status_code=500
                 )
-                
+
         except Exception as e:
             logger.error(f"OAuth callback processing failed: {e}")
             return HTMLResponse(
@@ -357,7 +358,7 @@ def create_app() -> FastAPI:
     @app.get("/api/files/search")
     async def search_files_api(
         query: str = "",
-        folder_id: str = None,
+        folder_id: Optional[str] = None,
         limit: int = 10
     ) -> JSONResponse:
         """Search files in WorkDrive via REST API."""
@@ -370,7 +371,7 @@ def create_app() -> FastAPI:
                 status_code=500,
                 content={"error": str(e)}
             )
-    
+
     @app.get("/api/workspaces")
     async def get_workspaces_api() -> JSONResponse:
         """Get workspaces and teams via REST API."""
@@ -383,9 +384,9 @@ def create_app() -> FastAPI:
                 status_code=500,
                 content={"error": str(e)}
             )
-    
+
     @app.get("/api/team-folders")
-    async def get_team_folders_api(team_id: str = None) -> JSONResponse:
+    async def get_team_folders_api(team_id: Optional[str] = None) -> JSONResponse:
         """Get team folders via REST API."""
         try:
             result = await file_handler.list_team_folders(team_id)
@@ -396,7 +397,7 @@ def create_app() -> FastAPI:
                 status_code=500,
                 content={"error": str(e)}
             )
-    
+
     @app.get("/api/folders/{folder_id}/files")
     async def get_folder_files_api(folder_id: str, limit: int = 50) -> JSONResponse:
         """Get files in a specific folder via REST API."""

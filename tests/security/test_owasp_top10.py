@@ -2,10 +2,7 @@
 
 import base64
 import json
-import time
-from unittest.mock import patch
 
-import pytest
 from fastapi.testclient import TestClient
 
 
@@ -18,24 +15,24 @@ class TestOWASPTop10Security:
         # Test 1: Unauthorized access to admin endpoints
         admin_endpoints = [
             "/admin",
-            "/admin/users", 
+            "/admin/users",
             "/admin/config",
             "/system/status",
             "/debug/info"
         ]
-        
+
         for endpoint in admin_endpoints:
             response = client.get(endpoint, headers=auth_headers)
             # Should either be 404 (not implemented) or 403 (forbidden)
             assert response.status_code in [404, 403]
-        
+
         # Test 2: Path traversal attempts
         traversal_attempts = [
             "/mcp/../admin",
             "/mcp/../../etc/passwd",
             "/mcp/../config/secrets",
         ]
-        
+
         for path in traversal_attempts:
             response = client.post(path, headers=auth_headers, json={
                 "jsonrpc": "2.0",
@@ -43,7 +40,7 @@ class TestOWASPTop10Security:
                 "id": 1
             })
             assert response.status_code in [404, 403, 400]
-        
+
         # Test 3: Direct object reference
         response = client.post("/mcp", headers=auth_headers, json={
             "jsonrpc": "2.0",
@@ -63,19 +60,19 @@ class TestOWASPTop10Security:
         """Test protection against cryptographic failures."""
         # Test 1: Ensure HTTPS is enforced (simulated)
         # In production, HTTP should redirect to HTTPS
-        
+
         # Test 2: Weak encryption detection
         # Test for any endpoints that might expose sensitive data over insecure channels
         response = client.get("/health")
         assert response.status_code == 200
-        
+
         # Health endpoint should not expose sensitive configuration
         data = response.json()
         sensitive_keys = ["password", "secret", "key", "token", "credential"]
         response_text = json.dumps(data).lower()
         for key in sensitive_keys:
             assert key not in response_text, f"Health endpoint should not expose {key}"
-        
+
         # Test 3: Ensure no sensitive data in error messages
         response = client.post("/mcp", json={"invalid": "request"})
         error_text = response.text.lower()
@@ -87,7 +84,7 @@ class TestOWASPTop10Security:
     def test_a03_injection_comprehensive(self, client: TestClient, auth_headers):
         """Comprehensive injection attack tests."""
         # Already covered in test_injection_attacks.py, but adding critical cases
-        
+
         # Test 1: Command injection in system operations
         command_injections = [
             "; cat /etc/passwd",
@@ -96,7 +93,7 @@ class TestOWASPTop10Security:
             "`id`",
             "$(uname -a)"
         ]
-        
+
         for injection in command_injections:
             response = client.post("/mcp", headers=auth_headers, json={
                 "jsonrpc": "2.0",
@@ -136,7 +133,7 @@ class TestOWASPTop10Security:
         })
         # Should validate business rules
         assert response.status_code in [400, 404, 422]
-        
+
         # Test 2: Resource enumeration
         # Attempt to enumerate resources
         for i in range(1, 10):
@@ -163,17 +160,17 @@ class TestOWASPTop10Security:
         # Test 1: Debug information exposure
         debug_endpoints = [
             "/debug",
-            "/trace", 
+            "/trace",
             "/config",
             "/env",
             "/system-info"
         ]
-        
+
         for endpoint in debug_endpoints:
             response = client.get(endpoint)
             # Debug endpoints should not be accessible in production
             assert response.status_code in [404, 403]
-        
+
         # Test 2: Default credentials
         # Attempt to use default/common credentials
         default_headers = {"Authorization": "Bearer default"}
@@ -183,9 +180,9 @@ class TestOWASPTop10Security:
             "id": 1
         })
         assert response.status_code == 401
-        
+
         # Test 3: Error handling - should not expose stack traces
-        response = client.post("/mcp", headers=auth_headers, json={
+        response = client.post("/mcp", json={
             "jsonrpc": "2.0",
             "method": "nonexistent_method",
             "id": 1
@@ -200,19 +197,14 @@ class TestOWASPTop10Security:
         """Test for vulnerable component detection."""
         # This test checks if we can identify potentially vulnerable components
         # In a real scenario, this would be part of dependency scanning
-        
+
         import pkg_resources
-        
+
         # Get installed packages
         installed_packages = [d.project_name.lower() for d in pkg_resources.working_set]
-        
+
         # Check for known vulnerable packages (examples)
-        known_vulnerable = [
-            "django<3.2.0",  # Example of vulnerable version pattern
-            "requests<2.20.0",
-            "urllib3<1.24.2"
-        ]
-        
+
         # This test mainly serves as a reminder to keep dependencies updated
         # In practice, use tools like safety, pip-audit, or snyk
         assert len(installed_packages) > 0, "Should have installed packages to analyze"
@@ -222,36 +214,36 @@ class TestOWASPTop10Security:
         """Test identification and authentication failures."""
         # Test 1: Weak password policy (if user registration exists)
         # This test assumes user creation endpoints exist
-        
+
         # Test 2: Credential stuffing protection
         # Attempt multiple failed logins
         for i in range(10):
             response = client.post("/mcp", headers={
                 "Authorization": f"Bearer invalid_token_{i}"
             }, json={
-                "jsonrpc": "2.0", 
+                "jsonrpc": "2.0",
                 "method": "ping",
                 "id": i
             })
             assert response.status_code == 401
-        
+
         # System should still function after failed attempts
         # (Rate limiting might kick in, but system should remain responsive)
-        
+
         # Test 3: Session management
         # Test that sessions are properly invalidated
         from server.auth.jwt_handler import JWTHandler
         jwt_handler = JWTHandler()
-        
+
         # Create short-lived token
         token = jwt_handler.create_access_token("test_user")
-        
+
         # Use token immediately (should work)
         response = client.post("/mcp", headers={
             "Authorization": f"Bearer {token}"
         }, json={
             "jsonrpc": "2.0",
-            "method": "ping", 
+            "method": "ping",
             "id": 1
         })
         # May fail due to IP restrictions, but that's not an auth failure
@@ -261,20 +253,20 @@ class TestOWASPTop10Security:
         """Test software and data integrity failures."""
         # Test 1: Unsigned data acceptance
         # Ensure that critical operations require proper authentication
-        
+
         # Test 2: Insecure deserialization
         # Attempt to send serialized objects that could be exploited
         malicious_payloads = [
             # Python pickle attempt (should not be used)
             {"data": "gASVDgAAAAAAAABDBXBvaXNvbnEBLg=="},  # base64 encoded pickle
-            
+
             # YAML deserialization attempt
             {"yaml_data": "!!python/object/apply:os.system ['rm -rf /']"},
-            
+
             # JSON with prototype pollution
             {"__proto__": {"admin": True}},
         ]
-        
+
         for payload in malicious_payloads:
             response = client.post("/mcp", headers=auth_headers, json={
                 "jsonrpc": "2.0",
@@ -297,7 +289,7 @@ class TestOWASPTop10Security:
         """Test security logging and monitoring."""
         # Test 1: Security events are logged (simulation)
         # This test ensures security-relevant events would be logged
-        
+
         # Failed authentication attempt
         response = client.post("/mcp", headers={
             "Authorization": "Bearer invalid_token"
@@ -307,7 +299,7 @@ class TestOWASPTop10Security:
             "id": 1
         })
         assert response.status_code == 401
-        
+
         # Successful authentication
         response = client.post("/mcp", headers=auth_headers, json={
             "jsonrpc": "2.0",
@@ -315,7 +307,7 @@ class TestOWASPTop10Security:
             "id": 1
         })
         # Response may vary due to IP restrictions
-        
+
         # Test 2: Log injection prevention
         # Ensure log entries can't be manipulated
         response = client.post("/mcp", headers=auth_headers, json={
@@ -344,12 +336,12 @@ class TestOWASPTop10Security:
             "gopher://127.0.0.1:25/",  # Gopher protocol
             "ftp://internal.server/",  # FTP
         ]
-        
+
         for payload in ssrf_payloads:
             # Test in file operations that might make external requests
             response = client.post("/mcp", headers=auth_headers, json={
                 "jsonrpc": "2.0",
-                "method": "callTool", 
+                "method": "callTool",
                 "params": {
                     "name": "downloadFile",
                     "arguments": {
@@ -359,14 +351,14 @@ class TestOWASPTop10Security:
                 "id": 1
             })
             assert response.status_code in [400, 422, 403]
-        
+
         # Test 2: URL validation in webhook configurations
         malicious_urls = [
             "http://localhost:8080/admin",
             "https://internal.company.com/secrets",
             "http://0.0.0.0:22",
         ]
-        
+
         for url in malicious_urls:
             # If webhook endpoints exist, test URL validation
             response = client.post("/webhook/test", json={
@@ -382,13 +374,13 @@ class TestOWASPTop10Security:
             "Origin": "https://evil.com",
             "Access-Control-Request-Method": "POST"
         })
-        
+
         # Should have proper CORS configuration
         if "Access-Control-Allow-Origin" in response.headers:
             origin = response.headers["Access-Control-Allow-Origin"]
             # Should not allow all origins in production
             assert origin != "*" or response.status_code == 403
-        
+
         # Test 2: Preflight request handling
         response = client.options("/mcp")
         assert response.status_code in [200, 204, 404]
@@ -396,17 +388,17 @@ class TestOWASPTop10Security:
     def test_content_type_validation(self, client: TestClient, auth_headers):
         """Test content-type validation."""
         # Test 1: Wrong content type
-        response = client.post("/mcp", 
+        response = client.post("/mcp",
                               headers={**auth_headers, "Content-Type": "text/plain"},
                               data="malicious data")
         assert response.status_code in [400, 415, 422]
-        
+
         # Test 2: Missing content type
         response = client.post("/mcp",
                               headers=auth_headers,
                               data=json.dumps({
                                   "jsonrpc": "2.0",
-                                  "method": "ping", 
+                                  "method": "ping",
                                   "id": 1
                               }))
         # Should handle gracefully or require proper content type
@@ -420,7 +412,7 @@ class TestOWASPTop10Security:
             ("exploit.php", b"<?php system($_GET['cmd']); ?>"),  # PHP script
             ("bomb.zip", b"PK\x03\x04"),  # ZIP bomb (simplified)
         ]
-        
+
         for filename, content in malicious_files:
             content_b64 = base64.b64encode(content).decode()
             response = client.post("/mcp", headers=auth_headers, json={

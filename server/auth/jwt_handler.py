@@ -1,8 +1,8 @@
 """JWT authentication handler for Zoho MCP Server."""
 
 import logging
-from typing import Any, Dict, List, Optional, Union
 from datetime import datetime, timedelta, timezone
+from typing import Optional
 
 import jwt
 from fastapi import HTTPException, status
@@ -70,7 +70,7 @@ class JWTHandler:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Could not create access token"
-            )
+            ) from e
 
     def verify_token(self, token: str) -> TokenData:
         """Verify and decode a JWT token.
