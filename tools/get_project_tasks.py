@@ -6,18 +6,44 @@ import httpx
 import json
 import jwt
 import os
+import sys
+import argparse
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 # 環境設定読み込み
-load_dotenv("temp_jwt.env")
+load_dotenv()
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 MCP_SERVER_URL = "http://localhost:8000"
-
-# プロジェクトID (環境変数から取得)
-PROJECT_ID = os.getenv("TARGET_PROJECT_ID", "YOUR_PROJECT_ID_HERE")
 OUTPUT_DIR = os.getenv("OUTPUT_DIR", "reports/exports")
+
+def get_project_id():
+    """コマンドライン引数または環境変数からプロジェクトIDを取得"""
+    parser = argparse.ArgumentParser(description="Zoho Projects のタスクを取得")
+    parser.add_argument("--project-id", "-p", type=str,
+                       help="プロジェクトID (例: 1790933000004263341)")
+    
+    args = parser.parse_args()
+    
+    # コマンドライン引数が優先
+    if args.project_id:
+        return args.project_id
+    
+    # 環境変数から取得
+    project_id = os.getenv("TARGET_PROJECT_ID")
+    if project_id and project_id != "YOUR_PROJECT_ID_HERE":
+        return project_id
+    
+    # どちらも設定されていない場合
+    print("❌ プロジェクトIDが指定されていません")
+    print("\n📝 指定方法:")
+    print("1. コマンドライン引数: python tools/get_project_tasks_via_mcp.py --project-id 1790933000004263341")
+    print("2. 環境変数: .envファイルに TARGET_PROJECT_ID=1790933000004263341 を追加")
+    sys.exit(1)
+
+# プロジェクトID取得
+PROJECT_ID = get_project_id()
 
 def generate_jwt_token():
     """MCP Server用JWTトークンを生成"""

@@ -43,11 +43,16 @@ Zoho API Console の **Self Client** 機能を使用することで、従来の�
 
 1. 「**CREATE**」ボタンをクリック
 2. 生成された**認証コード**をコピー
-3. 以下のコマンドでRefresh Tokenに変換：
+3. 以下の方法でRefresh Tokenに変換：
 
+**方法A: 自動認証（推奨）**
 ```bash
-python tools/exchange_auth_code.py [認証コード]
+python tools/generate_zoho_auth_url.py
+# オプション1を選択してブラウザで認証完了
 ```
+
+**方法B: 手動でコード入力**
+- 生成されたコードを直接`.env`ファイルの`ZOHO_REFRESH_TOKEN=`に設定
 
 ## 📝 例
 
@@ -56,9 +61,10 @@ python tools/exchange_auth_code.py [認証コード]
 1000.abcd1234efgh5678ijkl9012mnop3456.qrst7890uvwx1234yzab5678cdef9012
 ```
 
-### 変換コマンド例
+### 自動認証の流れ
 ```bash
-python tools/exchange_auth_code.py 1000.abcd1234efgh5678ijkl9012mnop3456.qrst7890uvwx1234yzab5678cdef9012
+python tools/generate_zoho_auth_url.py
+# → ブラウザが開く → 認証完了 → 自動で.envファイル更新
 ```
 
 ### 成功時の出力

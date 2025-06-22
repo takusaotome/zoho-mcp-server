@@ -1,21 +1,27 @@
-# Zoho MCP Server ガイド集
+# 📚 Zoho MCP Server ガイド集
 
-このディレクトリには設定ガイドやトラブルシューティング情報が含まれています。
+シンプルで分かりやすいガイドのみを厳選しました。
 
-## 🚀 セットアップガイド
+## 🚀 **セットアップガイド**
 
-### 推奨方法
-- **⭐ `zoho_self_client_setup.md`** - **Self Client設定ガイド** (簡単・高速)
+### ⭐ **推奨方法**
+- **[`zoho_self_client_setup.md`](zoho_self_client_setup.md)** - **Self Client設定ガイド** 
+  - 🕐 **10分で完了**
+  - 🎯 **最も簡単**
+  - ✅ **初心者向け**
 
-### 従来方法
-- `zoho_oauth_setup_guide.md` - Zoho OAuth設定ガイド (複雑)
-- `zoho_scope_setup_guide.md` - Zoho スコープ設定ガイド
-- `zoho_scope_location_guide.md` - Zoho スコープ場所ガイド
+### 🔧 **従来方法**
+- [`zoho_oauth_setup_guide.md`](zoho_oauth_setup_guide.md) - 従来のOAuth設定ガイド
+  - ⚠️ 複雑な手順
+  - 🏢 企業向け
 
-## 🔧 トラブルシューティング
-- `fix_reauth_required.md` - 認証エラー解決
-- `fix_400_error_guide.md` - 400エラー修正ガイド
-- `zoho_registration_troubleshooting.md` - Zoho登録時のトラブルシューティング
+## 🆘 **トラブルシューティング**
+
+問題が発生した場合のみ参照してください：
+
+- [`fix_reauth_required.md`](fix_reauth_required.md) - **認証エラー**の解決
+- [`fix_400_error_guide.md`](fix_400_error_guide.md) - **400エラー**の修正
+- [`zoho_registration_troubleshooting.md`](zoho_registration_troubleshooting.md) - **Zoho登録**時の問題
 
 ## 📋 参考情報
 - `zoho_correct_scopes.txt` - 正しいZohoスコープ設定
@@ -28,14 +34,14 @@
 ## 💡 拡張提案
 - `user_management_proposal.md` - ユーザー管理機能提案
 
-## ✅ 使用手順
+## ✅ **使用手順**
 
-### 新規セットアップ (推奨)
-1. **`zoho_self_client_setup.md`** を最初に読んでください
-2. Self Client方式で10分程度でセットアップ完了
-3. 問題があればトラブルシューティングガイドを参照
+### 🎯 **新規セットアップ（推奨）**
+1. **[`zoho_self_client_setup.md`](zoho_self_client_setup.md)** だけを読む
+2. 10分でセットアップ完了
+3. 問題があればトラブルシューティングを参照
 
-### 従来方式
-1. `zoho_oauth_setup_guide.md` で詳細な手順を確認
-2. スコープ設定ガイドで権限を正しく設定
-3. 各種参考ファイルで設定値を確認 
+### 💡 **迷った時は**
+- まず **Self Client設定ガイド** を試してください
+- うまくいかない場合のみ他のガイドを参照
+- 自動セットアップツール: `python tools/setup_wizard.py` 

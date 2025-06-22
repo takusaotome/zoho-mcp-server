@@ -1,37 +1,55 @@
 # Tools Directory
 
-このディレクトリには本格的なユーティリティスクリプトが含まれています。
-一時的なテスト・デバッグファイルは整理により削除されています。
+このディレクトリには必要なユーティリティスクリプトのみが含まれています。
+重複機能を持つツールは整理により削除されています。
 
-## ファイル分類
+## 📁 ファイル構成
 
-### 認証・設定関連
-- `exchange_auth_code.py` - 認証コード交換
-- `generate_zoho_auth_url.py` - Zoho 認証URL生成
-- `check_configuration.py` - 設定確認
+### 🚀 セットアップ・認証関連
+- `setup_wizard.py` - **自動セットアップウィザード（推奨）**
+- `generate_jwt_secret.py` - JWT秘密鍵生成
+- `generate_zoho_auth_url.py` - Zoho OAuth認証URL生成（自動認証対応）
 
-### データ取得スクリプト
-- `get_real_portal_and_projects.py` - ポータル・プロジェクト情報取得
+### 🔍 診断・確認
+- `diagnose_oauth.py` - OAuth認証問題の詳細診断
+- `verify_setup.py` - セットアップ完了後の動作確認
+
+### 📊 データ取得・レポート
+- `get_real_portal_and_projects.py` - Portal・プロジェクト情報取得
 - `get_project_tasks_via_mcp.py` - プロジェクトタスクデータ取得（MCP経由）
-- `get_zoho_projects_list.py` - Zoho プロジェクト一覧取得
-- `get_portal_id.py` - ポータルID取得
+- `generate_task_report.py` - Markdownタスクレポート生成
+- `export_project_task_details.py` - 詳細JSONエクスポート
 
-### レポート生成・エクスポート
-- `generate_task_report.py` - タスクレポート生成
-- `export_project_task_details.py` - プロジェクトタスク詳細エクスポート
+## 🎯 推奨使用順序
 
-### 検証・確認
-- `verify_setup.py` - セットアップ検証
-- `final_verification.py` - 最終検証
-
-## 使用方法
-
-各スクリプトは独立して実行可能です。環境変数が適切に設定されていることを確認してから実行してください。
-
+### 初回セットアップ
 ```bash
-# 例：プロジェクト一覧を取得
-python tools/get_zoho_projects_list.py
+# 1. 自動セットアップ（推奨）
+python tools/setup_wizard.py
 
-# 例：セットアップを検証  
+# または手動セットアップ
+python tools/generate_jwt_secret.py
+python tools/generate_zoho_auth_url.py
+python tools/verify_setup.py
+```
+
+### 日常運用
+```bash
+# プロジェクト情報確認
+python tools/get_real_portal_and_projects.py
+
+# タスクデータ取得
+python tools/get_project_tasks_via_mcp.py --project-id YOUR_PROJECT_ID
+
+# レポート生成
+python tools/generate_task_report.py
+```
+
+### トラブルシューティング
+```bash
+# OAuth認証問題の診断
+python tools/diagnose_oauth.py
+
+# 設定・動作確認
 python tools/verify_setup.py
 ``` 

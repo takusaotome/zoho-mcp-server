@@ -2,9 +2,42 @@
 
 Model Context Protocol (MCP) server for Zoho Projects and WorkDrive integration.
 
+## 📖 Table of Contents
+
+- [🚀 Quick Start Guide](#-quick-start-guide)
+  - [📋 Prerequisites](#-prerequisites)
+  - [🔧 Step 1: Installation](#-step-1-installation)
+  - [🔐 Step 2: Zoho OAuth Setup](#-step-2-zoho-oauth-setup)
+  - [⚙️ Step 3: Initial Setup Verification](#️-step-3-initial-setup-verification)
+  - [🔍 Step 4: Find Your Portal & Project IDs](#-step-4-find-your-portal--project-ids)
+  - [✅ Step 5: Final Testing](#-step-5-final-testing)
+  - [🎯 Step 6: Start Using](#-step-6-start-using)
+- [⚙️ Advanced Configuration](#️-advanced-configuration)
+- [🛠 Available Tools](#-available-tools)
+- [💻 Usage Examples](#-usage-examples)
+- [🧪 Development](#-development)
+- [🚀 Deployment](#-deployment)
+- [🔍 Troubleshooting](#-troubleshooting)
+
 ## Overview
 
+**⚡ 5分でZoho Projects APIを使い始められる！**
+
 This server enables natural language interaction with Zoho applications through MCP-compatible clients like Cursor IDE and Claude. It provides secure access to Zoho Projects tasks and WorkDrive files via JSON-RPC protocol.
+
+### ✨ Key Features
+- **🎯 Easy Setup**: 5-minute OAuth setup with automatic token management
+- **🔐 Secure**: JWT authentication, IP allowlisting, rate limiting  
+- **🚀 Fast**: Redis caching, async processing
+- **📊 Comprehensive**: Task management, file operations, project analytics
+- **🤖 AI-Ready**: Perfect for Cursor IDE, Claude, and other MCP clients
+
+### 🎬 What You Can Do
+- 📝 **Create and manage tasks** with natural language
+- 📊 **Generate project reports** and analytics
+- 🔍 **Search across projects** and files
+- 📁 **Upload/download files** to WorkDrive
+- 🔔 **Real-time webhooks** for task updates
 
 ## Project Structure
 
@@ -49,69 +82,260 @@ zoho-mcp-server/
 - CORS protection
 - OAuth2 integration with Zoho
 
-## Quick Start
+## 🚀 Quick Start Guide
 
-### Prerequisites
-- Python 3.12+
-- Redis server
-- Zoho OAuth credentials
+> **⏱️ 所要時間: 約5分** | **💡 初回セットアップのみ必要**
 
-### Installation
+### 🧙‍♂️ Option A: 自動セットアップ（推奨）
 
-1. Clone the repository:
+**最も簡単な方法！ウィザードが全て自動化します：**
+
+```bash
+# 1. 依存関係をインストール
+pip install -r requirements-dev.txt
+
+# 2. セットアップウィザードを実行
+python tools/setup_wizard.py
+```
+
+ウィザードが以下を自動実行：
+- ✅ 前提条件チェック（Python, Redis）
+- ✅ .envファイル作成
+- ✅ JWT_SECRET自動生成
+- ✅ Zoho認証情報の設定
+- ✅ OAuth認証フロー
+- ✅ Portal ID・Project ID取得
+- ✅ 最終テスト実行
+
+**5分で完了！** 🎉
+
+---
+
+### 📖 Option B: 手動セットアップ
+
+詳細を理解したい場合の手動セットアップ：
+
+### 📋 Prerequisites
+- **Python 3.12+** (with pip)
+- **Redis server** (local or cloud)
+- **Zoho account** (Projects and WorkDrive access)
+
+### 🔧 Step 1: Installation
+
+1. **Clone and setup**:
 ```bash
 git clone <repository-url>
 cd zoho-mcp-server
-```
-
-2. Install dependencies:
-```bash
 pip install -r requirements-dev.txt
 ```
 
-3. Configure environment:
+2. **Start Redis** (if not running):
+```bash
+# macOS (Homebrew)
+brew install redis
+brew services start redis
+
+# Ubuntu/Debian
+sudo apt install redis-server
+sudo systemctl start redis
+
+# Windows (WSL recommended)
+sudo service redis-server start
+```
+
+### 🔐 Step 2: Zoho OAuth Setup
+
+**Choose one of the following methods:**
+
+#### 🌟 Method A: Automatic Setup (Recommended)
+
+1. **Create Zoho Application**:
+   - Go to [Zoho API Console](https://api-console.zoho.com)
+   - Click "ADD CLIENT" → "Server-based Applications"
+   - Fill in:
+     - **Client Name**: `MCP Server`
+     - **Homepage URL**: `http://localhost:8000`
+     - **Authorized Redirect URIs**: `http://localhost:8000/auth/callback`
+
+2. **Configure Environment**:
 ```bash
 cp config/env.example .env
-# Edit .env with your credentials
 ```
 
-4. Run the server:
+3. **Edit `.env` file** with your Zoho credentials:
 ```bash
-uvicorn server.main:app --reload
+# Required: Copy from Zoho API Console
+ZOHO_CLIENT_ID=1000.XXXXXXXXXXXXXXXXXX
+ZOHO_CLIENT_SECRET=your_client_secret_here
+
+# Required: Generate JWT Secret (see step 3.1 below)
+JWT_SECRET=your_generated_jwt_secret_here
+
+# Required: Your Portal ID (see step 5.2 below)
+ZOHO_PORTAL_ID=your_portal_id
+
+# Required: Default Project ID for testing (see step 5.3 below)
+TARGET_PROJECT_ID=your_project_id_here
+
+# Redis (default for local)
+REDIS_URL=redis://localhost:6379/0
 ```
 
-5. Test the setup:
+   **3.1. Generate JWT Secret** (簡単！):
+   ```bash
+   python tools/generate_jwt_secret.py
+   ```
+   - 自動で安全なJWT_SECRETを生成
+   - .envファイルに自動追加オプション
+   - ✅ 30秒で完了！
+
+4. **Start the server**:
 ```bash
-python tools/check_configuration.py
-python tools/final_verification.py
+uvicorn server.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-## Configuration
+5. **Run OAuth authentication** (automatic setup):
+```bash
+python tools/generate_zoho_auth_url.py
+```
+   - Select option **1** (推奨・自動設定)
+   - Follow the browser authentication
+   - ✅ **Done!** Refresh token is automatically saved
 
-### Environment Variables
+6. **Test your setup**:
+```bash
+# Quick verification
+python tools/verify_setup.py
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `ZOHO_CLIENT_ID` | Zoho OAuth Client ID | Yes |
-| `ZOHO_CLIENT_SECRET` | Zoho OAuth Client Secret | Yes |
-| `ZOHO_REFRESH_TOKEN` | Zoho OAuth Refresh Token | Yes |
-| `JWT_SECRET` | JWT signing secret (32+ chars) | Yes |
-| `REDIS_URL` | Redis connection URL | Yes |
-| `ALLOWED_IPS` | Comma-separated IP allowlist | No |
+# Test API access (optional)
+python tools/get_project_tasks_via_mcp.py
+```
+   - ✅ If successful, you'll see your projects and tasks!
 
-### Zoho OAuth Setup
+#### 📖 Method B: Manual Setup (Self Client)
 
-**🚀 推奨方法: Self Client** (簡単・高速)
-1. [Zoho API Console](https://api-console.zoho.com) の「Self Client」を選択
-2. 必要なスコープを設定 (10分で期限切れ)
-3. 生成されたコードを `python tools/exchange_auth_code.py [コード]` で変換
+For simpler setup without server configuration:
 
-**従来方法: Server-based Application** (複雑)
-1. Zoho Developer Console でアプリケーション作成
-2. OAuth設定とスコープ設定
-3. 詳細は `docs/guides/zoho_oauth_setup_guide.md` を参照
+1. **Use Self Client**:
+   - Go to [Zoho API Console](https://api-console.zoho.com)
+   - Click "Self Client" tab
+   - Select scopes: `ZohoProjects.projects.read`, `ZohoProjects.tasks.all`
+   - Generate code (10-minute expiry)
 
-詳細ガイド: [Self Client設定ガイド](docs/guides/zoho_self_client_setup.md)
+2. **Convert to Refresh Token**:
+```bash
+python tools/exchange_auth_code.py "YOUR_GENERATED_CODE"
+```
+
+### ⚙️ Step 3: Initial Setup Verification
+
+1. **Basic setup verification**:
+```bash
+python tools/verify_setup.py
+```
+
+### 🔍 Step 4: Find Your Portal & Project IDs
+
+2. **Get your Portal ID and available projects**:
+```bash
+python tools/get_real_portal_and_projects.py
+```
+   - 📋 利用可能なプロジェクト一覧が表示されます
+   - 📝 Portal IDとProject IDをメモしてください
+
+3. **Update `.env` file with your IDs**:
+```bash
+# .envファイルを編集して以下を更新:
+ZOHO_PORTAL_ID=your_actual_portal_id
+TARGET_PROJECT_ID=your_actual_project_id
+```
+
+### ✅ Step 5: Final Testing
+
+4. **Complete API test**:
+```bash
+python tools/get_project_tasks_via_mcp.py
+```
+   - ✅ 成功すると、プロジェクトのタスク一覧が表示されます
+
+5. **Alternative: Test with specific project**:
+```bash
+python tools/get_project_tasks_via_mcp.py --project-id YOUR_PROJECT_ID
+```
+
+### 🎯 Step 6: Start Using
+
+Your MCP server is now ready! The server provides:
+
+- **MCP Endpoint**: `http://localhost:8000/mcp`
+- **Health Check**: `http://localhost:8000/health`
+- **API Docs**: `http://localhost:8000/docs` (debug mode)
+
+### 🔧 Quick Troubleshooting
+
+**❌ "Invalid OAuth Scope" error**
+```bash
+# Remove problematic scope and retry
+python tools/generate_zoho_auth_url.py
+# Select option 1 and re-authenticate
+```
+
+**❌ "Invalid Redirect Uri" error**
+```bash
+# Check Zoho API Console settings:
+# Redirect URI must be: http://localhost:8000/auth/callback
+```
+
+**❌ Redis connection error**
+```bash
+# Check Redis is running
+redis-cli ping
+# Should return: PONG
+```
+
+**❌ JWT_SECRET missing or invalid**
+```bash
+# Generate new JWT secret
+python tools/generate_jwt_secret.py
+# Select option to auto-add to .env file
+```
+
+**❌ "JWT_SECRET too short" error**
+```bash
+# JWT_SECRET must be at least 32 characters
+# Use the generator tool for secure secret:
+python tools/generate_jwt_secret.py
+```
+
+For detailed troubleshooting, see: [`docs/guides/`](docs/guides/)
+
+## ⚙️ Advanced Configuration
+
+### Environment Variables Reference
+
+| Variable | Description | Required | Default |
+|----------|-------------|----------|---------|
+| `ZOHO_CLIENT_ID` | Zoho OAuth Client ID | ✅ Yes | - |
+| `ZOHO_CLIENT_SECRET` | Zoho OAuth Client Secret | ✅ Yes | - |
+| `ZOHO_REFRESH_TOKEN` | OAuth Refresh Token (auto-generated) | ✅ Yes | - |
+| `ZOHO_PORTAL_ID` | Your Zoho Portal ID | ⚠️ Recommended | - |
+| `JWT_SECRET` | JWT signing secret (use `tools/generate_jwt_secret.py`) | ✅ Yes | - |
+| `REDIS_URL` | Redis connection URL | ✅ Yes | `redis://localhost:6379/0` |
+| `ALLOWED_IPS` | IP allowlist (comma-separated) | ❌ No | `127.0.0.1,::1` |
+| `RATE_LIMIT_PER_MINUTE` | Request rate limit | ❌ No | `100` |
+| `DEBUG` | Enable debug mode | ❌ No | `false` |
+
+### Required Zoho Scopes
+
+The following scopes are automatically configured:
+- **`ZohoProjects.projects.read`** - Read project information
+- **`ZohoProjects.tasks.all`** - Full task management access
+
+### Additional Setup Guides
+
+- 📖 **Detailed OAuth Guide**: [`docs/guides/zoho_oauth_setup_guide.md`](docs/guides/zoho_oauth_setup_guide.md)
+- 🔧 **Self Client Method**: [`docs/guides/zoho_self_client_setup.md`](docs/guides/zoho_self_client_setup.md)
+- 🔍 **Troubleshooting**: [`docs/guides/fix_400_error_guide.md`](docs/guides/fix_400_error_guide.md)
 
 ## API Endpoints
 
@@ -123,7 +347,7 @@ python tools/final_verification.py
 - `GET /health` - Health check
 - `POST /webhook/task-updated` - Webhook receiver
 
-## Available Tools
+## 🛠 Available Tools
 
 | Tool | Description | Parameters |
 |------|-------------|------------|
@@ -136,7 +360,7 @@ python tools/final_verification.py
 | `uploadReviewSheet` | Upload review file | `project_id`, `folder_id`, `name`, `content_base64` |
 | `searchFiles` | Search files | `query`, `folder_id?` |
 
-## Usage Examples
+## 💻 Usage Examples
 
 ### List Tasks
 ```json
@@ -172,7 +396,7 @@ python tools/final_verification.py
 }
 ```
 
-## Development
+## 🧪 Development
 
 ### Testing
 ```bash
@@ -208,7 +432,7 @@ pre-commit install
 pre-commit run --all-files
 ```
 
-## Deployment
+## 🚀 Deployment
 
 ### Render Platform
 This project is configured for deployment on Render using `render.yaml`.
@@ -273,7 +497,7 @@ docker run -p 8000:8000 --env-file .env zoho-mcp-server
 - Token revocation support
 - Refresh token backup in secrets manager
 
-## Troubleshooting
+## 🔍 Troubleshooting
 
 ### Common Issues
 

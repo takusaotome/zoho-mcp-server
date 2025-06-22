@@ -6,11 +6,12 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 
 from server.auth.ip_allowlist import IPAllowlistMiddleware
 from server.auth.jwt_handler import jwt_handler, TokenData
+from server.auth.oauth_handler import oauth_handler
 from server.core.config import settings
 from server.core.mcp_handler import MCPHandler
 from server.handlers.webhooks import WebhookHandler
@@ -96,6 +97,213 @@ def create_app() -> FastAPI:
             "version": "0.1.0",
             "environment": settings.environment
         }
+
+    @app.get("/auth/callback")
+    async def oauth_callback(code: str = None, error: str = None) -> HTMLResponse:
+        """Handle OAuth callback from Zoho."""
+        if error:
+            logger.error(f"OAuth error: {error}")
+            return HTMLResponse(
+                content=f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>認証エラー - Zoho MCP Server</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+                        .container {{ max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                        .error {{ color: #d32f2f; }}
+                        .icon {{ font-size: 48px; margin-bottom: 20px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="icon">❌</div>
+                        <h1 class="error">認証エラー</h1>
+                        <p>OAuth認証中にエラーが発生しました:</p>
+                        <p><strong>{error}</strong></p>
+                        <p>もう一度お試しください。</p>
+                    </div>
+                </body>
+                </html>
+                """,
+                status_code=400
+            )
+
+        if not code:
+            return HTMLResponse(
+                content="""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>認証エラー - Zoho MCP Server</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+                        .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                        .error { color: #d32f2f; }
+                        .icon { font-size: 48px; margin-bottom: 20px; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="icon">❌</div>
+                        <h1 class="error">認証コードが見つかりません</h1>
+                        <p>認証コードが提供されませんでした。</p>
+                        <p>もう一度認証フローを開始してください。</p>
+                    </div>
+                </body>
+                </html>
+                """,
+                status_code=400
+            )
+
+        try:
+            # Exchange code for tokens
+            logger.info("Processing OAuth callback...")
+            result = await oauth_handler.exchange_code_for_token(code)
+            
+            if result["success"]:
+                # Update .env file with new refresh token
+                refresh_token = result["refresh_token"]
+                env_updated = await oauth_handler.update_env_file(refresh_token)
+                
+                if env_updated:
+                    return HTMLResponse(
+                        content=f"""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>認証成功 - Zoho MCP Server</title>
+                            <meta charset="UTF-8">
+                            <style>
+                                body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+                                .container {{ max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                                .success {{ color: #2e7d32; }}
+                                .info {{ background-color: #e3f2fd; padding: 15px; border-radius: 4px; margin: 15px 0; }}
+                                .icon {{ font-size: 48px; margin-bottom: 20px; }}
+                                .token {{ font-family: monospace; background-color: #f5f5f5; padding: 10px; border-radius: 4px; word-break: break-all; }}
+                                .next-steps {{ background-color: #fff3e0; padding: 15px; border-radius: 4px; margin: 15px 0; }}
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="icon">✅</div>
+                                <h1 class="success">認証成功！</h1>
+                                <p>Zoho OAuth認証が正常に完了しました。</p>
+                                
+                                <div class="info">
+                                    <h3>取得した情報:</h3>
+                                    <ul>
+                                        <li><strong>Access Token:</strong> 取得済み（有効期限: {result.get('expires_in', 'N/A')}秒）</li>
+                                        <li><strong>Refresh Token:</strong> 取得済み・保存済み</li>
+                                        <li><strong>スコープ:</strong> {result.get('scope', 'N/A')}</li>
+                                        <li><strong>API Domain:</strong> {result.get('api_domain', 'N/A')}</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="next-steps">
+                                    <h3>🎯 次のステップ:</h3>
+                                    <ol>
+                                        <li>この画面を閉じてください</li>
+                                        <li>MCPサーバーが自動的に新しいトークンを使用します</li>
+                                        <li>Zoho Projects APIの機能が利用可能になりました</li>
+                                    </ol>
+                                </div>
+                                
+                                <p><small>このウィンドウは安全に閉じることができます。</small></p>
+                            </div>
+                        </body>
+                        </html>
+                        """
+                    )
+                else:
+                    return HTMLResponse(
+                        content="""
+                        <!DOCTYPE html>
+                        <html>
+                        <head>
+                            <title>設定エラー - Zoho MCP Server</title>
+                            <meta charset="UTF-8">
+                            <style>
+                                body { font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }
+                                .container { max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                                .warning { color: #f57c00; }
+                                .icon { font-size: 48px; margin-bottom: 20px; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="container">
+                                <div class="icon">⚠️</div>
+                                <h1 class="warning">設定更新エラー</h1>
+                                <p>認証は成功しましたが、設定ファイルの更新に失敗しました。</p>
+                                <p>手動で以下のRefresh Tokenを.envファイルに設定してください:</p>
+                                <p><code>{refresh_token}</code></p>
+                            </div>
+                        </body>
+                        </html>
+                        """,
+                        status_code=500
+                    )
+            else:
+                return HTMLResponse(
+                    content=f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <title>トークン交換エラー - Zoho MCP Server</title>
+                        <meta charset="UTF-8">
+                        <style>
+                            body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+                            .container {{ max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                            .error {{ color: #d32f2f; }}
+                            .icon {{ font-size: 48px; margin-bottom: 20px; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="icon">❌</div>
+                            <h1 class="error">トークン交換エラー</h1>
+                            <p>認証コードをトークンに変換する際にエラーが発生しました:</p>
+                            <p><strong>{result.get('error', 'Unknown error')}</strong></p>
+                            <p>もう一度認証フローを開始してください。</p>
+                        </div>
+                    </body>
+                    </html>
+                    """,
+                    status_code=500
+                )
+                
+        except Exception as e:
+            logger.error(f"OAuth callback processing failed: {e}")
+            return HTMLResponse(
+                content=f"""
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>処理エラー - Zoho MCP Server</title>
+                    <meta charset="UTF-8">
+                    <style>
+                        body {{ font-family: Arial, sans-serif; margin: 40px; background-color: #f5f5f5; }}
+                        .container {{ max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+                        .error {{ color: #d32f2f; }}
+                        .icon {{ font-size: 48px; margin-bottom: 20px; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="icon">❌</div>
+                        <h1 class="error">処理エラー</h1>
+                        <p>認証処理中に予期しないエラーが発生しました:</p>
+                        <p><strong>{str(e)}</strong></p>
+                        <p>もう一度認証フローを開始してください。</p>
+                    </div>
+                </body>
+                </html>
+                """,
+                status_code=500
+            )
 
     @app.post("/mcp")
     async def mcp_endpoint(

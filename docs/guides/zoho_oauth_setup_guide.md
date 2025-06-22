@@ -44,9 +44,14 @@ python generate_zoho_auth_url.py
 4. リダイレクトされたURLから `code=` パラメータを取得
 
 ### 2.3 認証コードをトークンに交換
+**方法A: 自動認証（推奨）**
 ```bash
-python exchange_auth_code.py [認証コード]
+python tools/generate_zoho_auth_url.py
+# オプション1を選択してブラウザで認証完了
 ```
+
+**方法B: 手動設定**
+- 取得した認証コードを`.env`ファイルの`ZOHO_REFRESH_TOKEN=`に直接設定
 
 ## 📝 **Step 3: .env ファイル更新**
 取得した値を .env ファイルに設定：

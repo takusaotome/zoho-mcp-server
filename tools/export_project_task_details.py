@@ -260,18 +260,23 @@ async def export_task_details():
             export_data["statistics"]["priority_breakdown"].get(priority, 0) + 1
     
     # Step 6: ファイルに出力
-    output_filename = f"project_tasks_tasks_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    # reports/exportsディレクトリを作成
+    export_dir = "reports/exports"
+    os.makedirs(export_dir, exist_ok=True)
     
-    print(f"\n💾 ファイル出力中: {output_filename}")
+    output_filename = f"project_tasks_tasks_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    output_filepath = os.path.join(export_dir, output_filename)
+    
+    print(f"\n💾 ファイル出力中: {output_filepath}")
     
     try:
-        with open(output_filename, 'w', encoding='utf-8') as f:
+        with open(output_filepath, 'w', encoding='utf-8') as f:
             json.dump(export_data, f, ensure_ascii=False, indent=2)
         
-        print(f"✅ ファイル出力完了: {output_filename}")
+        print(f"✅ ファイル出力完了: {output_filepath}")
         
         # ファイルサイズを表示
-        file_size = os.path.getsize(output_filename)
+        file_size = os.path.getsize(output_filepath)
         print(f"   ファイルサイズ: {file_size:,} bytes ({file_size/1024:.1f} KB)")
         
     except Exception as e:
@@ -300,7 +305,7 @@ async def export_task_details():
     for priority, count in sorted(export_data["statistics"]["priority_breakdown"].items()):
         print(f"  • {priority}: {count}個")
     
-    print(f"\n✅ エクスポート完了: {output_filename}")
+    print(f"\n✅ エクスポート完了: {output_filepath}")
     print("=" * 70)
 
 if __name__ == "__main__":

@@ -26,15 +26,13 @@ def load_env_config():
 def generate_auth_url(client_id, redirect_uri=None):
     """OAuth認証URLを生成"""
     if not redirect_uri:
-        redirect_uri = "http://localhost:8000/auth/callback"
+        # Self Client方式の場合は urn:ietf:wg:oauth:2.0:oob を使用
+        redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
     
-    # 必要なスコープ
+    # 必要なスコープ（正しい形式）
     scopes = [
-        "ZohoProjects.projects.READ",
-        "ZohoProjects.tasks.ALL", 
-        "ZohoProjects.files.READ",
-        "ZohoWorkDrive.files.ALL",
-        "ZohoWorkDrive.files.READ"
+        "ZohoProjects.projects.read",
+        "ZohoProjects.tasks.all"
     ]
     
     # OAuth認証URLのパラメータ
@@ -61,6 +59,7 @@ def main():
     # 現在の.env設定を確認
     env_config = load_env_config()
     client_id = env_config.get("ZOHO_CLIENT_ID")
+    redirect_uri = env_config.get("ZOHO_REDIRECT_URI")
     
     if not client_id:
         print("❌ ZOHO_CLIENT_IDが.envファイルに設定されていません")
@@ -79,10 +78,41 @@ def main():
         print("   正しい形式: 1000.XXXXXXXXXX")
     
     print()
+    
+    # Redirect URIの選択
+    if not redirect_uri:
+        print("🔗 Redirect URIを選択してください:")
+        print("1. http://localhost:8000/auth/callback (推奨・自動設定)")
+        print("2. urn:ietf:wg:oauth:2.0:oob (Self Client標準)")
+        print("3. https://accounts.zoho.com/oauth/callback (Zoho標準)")
+        print("4. カスタムURIを入力")
+        print()
+        
+        try:
+            choice = input("選択 (1-4): ").strip()
+            if choice == "1":
+                redirect_uri = "http://localhost:8000/auth/callback"
+            elif choice == "2":
+                redirect_uri = "urn:ietf:wg:oauth:2.0:oob"
+            elif choice == "3":
+                redirect_uri = "https://accounts.zoho.com/oauth/callback"
+            elif choice == "4":
+                redirect_uri = input("Redirect URIを入力してください: ").strip()
+                if not redirect_uri:
+                    print("❌ Redirect URIが入力されませんでした")
+                    return
+            else:
+                print("❌ 無効な選択です")
+                return
+        except (KeyboardInterrupt, EOFError):
+            print("\n❌ 操作がキャンセルされました")
+            return
+    
+    print(f"🔗 使用するRedirect URI: {redirect_uri}")
     print("🌐 OAuth認証URL生成中...")
     
     # 認証URL生成
-    auth_url = generate_auth_url(client_id)
+    auth_url = generate_auth_url(client_id, redirect_uri)
     
     print()
     print("✅ 認証URL生成完了!")
@@ -92,7 +122,15 @@ def main():
     print("1. 以下のURLをブラウザで開く")
     print("2. Zohoアカウントでログイン")
     print("3. アプリへのアクセス権限を承認")
-    print("4. リダイレクト後のURLから code= の値をコピー")
+    if redirect_uri == "http://localhost:8000/auth/callback":
+        print("4. 🚀 自動的にRefresh Tokenが設定されます！")
+        print("   （手動でのコード入力は不要です）")
+    elif redirect_uri == "urn:ietf:wg:oauth:2.0:oob":
+        print("4. 表示される認証コードをコピー")
+    elif redirect_uri == "https://accounts.zoho.com/oauth/callback":
+        print("4. リダイレクト後のURLから code= の値をコピー")
+    else:
+        print("4. リダイレクト後のURLまたは表示される認証コードをコピー")
     print()
     print("🔗 認証URL:")
     print("-" * 30)
@@ -113,8 +151,14 @@ def main():
     print()
     print("⚠️  重要な注意事項:")
     print("- 認証コードは10分間で期限切れになります")
-    print("- 認証完了後は exchange_auth_code.py を実行してください")
-    print("- エラーが発生した場合は、スコープ設定を確認してください")
+    if redirect_uri == "http://localhost:8000/auth/callback":
+        print("- 🎯 MCPサーバーが実行中であることを確認してください")
+        print("- 認証完了後、自動的に設定が更新されます")
+        print("- exchange_auth_code.py の実行は不要です")
+    else:
+        print("- 認証完了後は exchange_auth_code.py を実行してください")
+    print("- エラーが発生した場合は、別のRedirect URIを試してください")
+    print("- Zoho Developer ConsoleでRedirect URIの設定を確認してください")
 
 if __name__ == "__main__":
     main() 
