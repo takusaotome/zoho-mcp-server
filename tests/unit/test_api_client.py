@@ -6,6 +6,7 @@ import httpx
 import pytest
 
 from server.zoho.api_client import ZohoAPIClient, ZohoAPIError
+from server.core.exceptions import ExternalAPIError, TemporaryError, TimeoutError
 
 
 class TestZohoAPIError:
@@ -241,11 +242,10 @@ class TestZohoAPIClient:
         mock_response.url = "https://api.example.com/test"
         mock_response.json.return_value = {"result": "success"}
 
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(return_value=mock_response)
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(return_value=mock_response)
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'):
                 result = await client._make_request("GET", "/test", use_workdrive=False)
 
@@ -258,36 +258,33 @@ class TestZohoAPIClient:
     @pytest.mark.asyncio
     async def test_make_request_network_error_no_retry(self, client, mock_oauth_client):
         """Test make_request with network error and no retry."""
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(side_effect=httpx.ConnectError("Connection failed"))
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(side_effect=httpx.ConnectError("Connection failed"))
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'):
-                with pytest.raises(ZohoAPIError) as exc_info:
+                with pytest.raises(ExternalAPIError) as exc_info:
                     await client._make_request("GET", "/test", retry=False)
 
-        assert exc_info.value.status_code == 0
-        assert "Network error" in exc_info.value.message
+        assert "Network error" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_make_request_network_error_with_retry(self, client, mock_oauth_client):
         """Test make_request with network error and retry."""
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(side_effect=httpx.ConnectError("Connection failed"))
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(side_effect=httpx.ConnectError("Connection failed"))
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'), \
                  patch('asyncio.sleep') as mock_sleep:
 
-                with pytest.raises(ZohoAPIError) as exc_info:
+                with pytest.raises(ExternalAPIError) as exc_info:
                     await client._make_request("GET", "/test", retry=True)
 
         # Should retry 3 times
         assert mock_client.request.call_count == 3
         assert mock_sleep.call_count == 2  # 2 retry delays
-        assert exc_info.value.status_code == 0
+        assert "Network error" in str(exc_info.value)
 
     @pytest.mark.asyncio
     async def test_get_method(self, client, mock_oauth_client):
@@ -360,9 +357,10 @@ class TestZohoAPIClient:
         mock_make_request.assert_called_once_with(
             "PUT",
             "/projects/123",
+            json={"name": "Updated Project"},
+            headers=None,
             use_workdrive=True,
-            retry=True,
-            json={"name": "Updated Project"}
+            retry=True
         )
         assert result == {"updated": True}
 
@@ -408,11 +406,10 @@ class TestZohoAPIClient:
         mock_response.url = "https://projects.example.com/api/v3/test"
         mock_response.json.return_value = {}
 
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(return_value=mock_response)
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(return_value=mock_response)
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'):
                 await client._make_request("GET", "/test", use_workdrive=False)
 
@@ -428,11 +425,10 @@ class TestZohoAPIClient:
         mock_response.url = "https://workdrive.example.com/api/v1/test"
         mock_response.json.return_value = {}
 
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(return_value=mock_response)
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(return_value=mock_response)
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'):
                 await client._make_request("GET", "/test", use_workdrive=True)
 
@@ -450,11 +446,10 @@ class TestZohoAPIClient:
 
         custom_headers = {"X-Custom-Header": "test-value"}
 
-        with patch('httpx.AsyncClient') as mock_client_class:
-            mock_client = AsyncMock()
-            mock_client_class.return_value.__aenter__.return_value = mock_client
-            mock_client.request = AsyncMock(return_value=mock_response)
-
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(return_value=mock_response)
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
             with patch('server.zoho.api_client.logger'):
                 await client._make_request("GET", "/test", headers=custom_headers)
 
@@ -462,6 +457,177 @@ class TestZohoAPIClient:
         headers = call_args[1]["headers"]
         assert headers["Authorization"] == "Zoho-oauthtoken test_access_token"
         assert headers["X-Custom-Header"] == "test-value"
+
+    @pytest.mark.asyncio
+    async def test_async_context_manager(self, client):
+        """Test async context manager functionality."""
+        async with client as api_client:
+            assert api_client is client
+            # Verify that the client is properly initialized
+            assert api_client._client is None  # Client is created on demand
+
+    @pytest.mark.asyncio
+    async def test_head_method(self, client, mock_oauth_client):
+        """Test HEAD method."""
+        with patch.object(client, '_make_request', return_value={"headers": "success"}) as mock_make_request:
+            result = await client.head("/test")
+
+        assert result == {"headers": "success"}
+        mock_make_request.assert_called_once_with(
+            "HEAD",
+            "/test",
+            headers=None,
+            use_workdrive=False,
+            retry=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_options_method(self, client, mock_oauth_client):
+        """Test OPTIONS method."""
+        with patch.object(client, '_make_request', return_value={"allowed_methods": ["GET", "POST"]}) as mock_make_request:
+            result = await client.options("/test")
+
+        assert result == {"allowed_methods": ["GET", "POST"]}
+        mock_make_request.assert_called_once_with(
+            "OPTIONS",
+            "/test",
+            headers=None,
+            use_workdrive=False,
+            retry=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_patch_method(self, client, mock_oauth_client):
+        """Test PATCH method."""
+        patch_data = {"name": "updated_name"}
+        
+        with patch.object(client, '_make_request', return_value={"updated": True}) as mock_make_request:
+            result = await client.patch("/test", json=patch_data)
+
+        assert result == {"updated": True}
+        mock_make_request.assert_called_once_with(
+            "PATCH",
+            "/test",
+            json=patch_data,
+            headers=None,
+            use_workdrive=False,
+            retry=True
+        )
+
+    @pytest.mark.asyncio
+    async def test_post_with_files_content_type_removal(self, client, mock_oauth_client):
+        """Test POST method with files removes Content-Type header."""
+        mock_response = Mock()
+        mock_response.status_code = 200
+        mock_response.url = "https://api.example.com/upload"
+        mock_response.json.return_value = {"uploaded": True}
+
+        files = {"file": ("test.txt", "test content", "text/plain")}
+
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(return_value=mock_response)
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
+            with patch('server.zoho.api_client.logger'):
+                result = await client.post("/upload", files=files)
+
+        assert result == {"uploaded": True}
+        mock_client.request.assert_called_once()
+        call_args = mock_client.request.call_args
+        assert call_args[1]["method"] == "POST"
+        assert call_args[1]["files"] == files
+
+    @pytest.mark.asyncio
+    async def test_connection_pooling_client_reuse(self, client):
+        """Test that HTTP client is reused for connection pooling."""
+        # First call should create a new client
+        client1 = await client._get_client()
+        assert client1 is not None
+        assert client._client is client1
+
+        # Second call should reuse the same client
+        client2 = await client._get_client()
+        assert client2 is client1
+        assert client._client is client1
+
+    @pytest.mark.asyncio
+    async def test_connection_pooling_client_recreation(self, client):
+        """Test client recreation when closed."""
+        # Create and close client
+        client1 = await client._get_client()
+        await client.close()
+
+        # New call should create a new client
+        client2 = await client._get_client()
+        assert client2 is not client1
+        assert client._client is client2
+
+    @pytest.mark.asyncio
+    async def test_handle_response_temporary_error_rate_limit(self, client):
+        """Test handling rate limit with TemporaryError."""
+        mock_response = Mock()
+        mock_response.status_code = 429
+        mock_response.headers = {"Retry-After": "30"}
+        mock_response.text = "Rate limit exceeded"
+
+        with pytest.raises(TemporaryError) as exc_info:
+            await client._handle_response(mock_response, 0, 2)  # Not final attempt
+
+        assert exc_info.value.retry_after == 30
+
+    @pytest.mark.asyncio
+    async def test_handle_response_auth_error_final_attempt(self, client, mock_oauth_client):
+        """Test handling auth error on final attempt."""
+        mock_response = Mock()
+        mock_response.status_code = 401
+        mock_response.text = "Unauthorized"
+
+        with pytest.raises(ZohoAPIError) as exc_info:
+            await client._handle_response(mock_response, 1, 2)  # Final attempt
+
+        assert exc_info.value.status_code == 401
+        assert exc_info.value.message == "Authentication failed"
+
+    @pytest.mark.asyncio
+    async def test_handle_response_server_error_retry(self, client):
+        """Test handling server error with retry logic."""
+        mock_response = Mock()
+        mock_response.status_code = 500
+        mock_response.text = "Internal Server Error"
+
+        with patch('asyncio.sleep') as mock_sleep:
+            with pytest.raises(Exception, match="Server error 500, retrying"):
+                await client._handle_response(mock_response, 0, 2)  # Not final attempt
+
+        # Should sleep before retry
+        mock_sleep.assert_called_once_with(0.5)  # First retry delay
+
+    @pytest.mark.asyncio 
+    async def test_head_method_exception_handling(self, client, mock_oauth_client):
+        """Test HEAD method handles exceptions gracefully."""
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(side_effect=Exception("Request failed"))
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
+            with patch('server.zoho.api_client.logger'):
+                result = await client.head("/test")
+
+        # Should return empty dict on exception
+        assert result == {}
+
+    @pytest.mark.asyncio
+    async def test_timeout_error_handling(self, client, mock_oauth_client):
+        """Test TimeoutError is raised properly."""
+        mock_client = AsyncMock()
+        mock_client.request = AsyncMock(side_effect=httpx.TimeoutException("Request timeout"))
+        
+        with patch.object(client, '_get_client', return_value=mock_client):
+            with patch('server.zoho.api_client.logger'):
+                with pytest.raises(TimeoutError) as exc_info:
+                    await client._make_request("GET", "/test", retry=False)
+
+        assert "Request timed out" in str(exc_info.value)
+        assert exc_info.value.timeout_duration == client.timeout.connect
 
 
 def test_global_client_instance():

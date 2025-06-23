@@ -68,8 +68,9 @@ class TestMCPHandler:
 
         assert response["jsonrpc"] == "2.0"
         assert response["id"] == "test_003"
-        assert "error" in response
-        assert response["error"]["code"] == MCPError.INVALID_PARAMS
+        assert "result" in response
+        assert response["result"]["isError"] is True
+        assert "Missing tool name" in response["result"]["content"][0]["text"]
 
     @pytest.mark.asyncio
     async def test_handle_call_tool_unknown_tool(self, mcp_handler):
@@ -88,8 +89,9 @@ class TestMCPHandler:
 
         assert response["jsonrpc"] == "2.0"
         assert response["id"] == "test_004"
-        assert "error" in response
-        assert response["error"]["code"] == MCPError.METHOD_NOT_FOUND
+        assert "result" in response
+        assert response["result"]["isError"] is True
+        assert "unknown" in response["result"]["content"][0]["text"].lower()
 
     @pytest.mark.asyncio
     @patch('server.core.mcp_handler.MCPHandler.__init__', return_value=None)

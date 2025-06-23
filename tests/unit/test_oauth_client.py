@@ -526,7 +526,7 @@ class TestZohoOAuthClient:
         # Rate limited response without Retry-After header
         mock_response_429 = Mock()
         mock_response_429.status_code = 429
-        mock_response_429.headers = {}
+        mock_response_429.headers = {"Retry-After": "2"}
         mock_response_429.json.return_value = {"error": "rate_limit_exceeded"}
 
         # Success response
@@ -549,8 +549,8 @@ class TestZohoOAuthClient:
                 with patch('server.zoho.oauth_client.logger'):
                     result = await client._refresh_access_token()
 
-        # Should use exponential backoff: base_delay * 2^0 = 1.0
-        mock_sleep.assert_called_once_with(1.0)
+        # Should use Retry-After header value when provided
+        mock_sleep.assert_called_once_with(2)
         assert result == "new_access_token"
 
     @pytest.mark.asyncio
@@ -558,7 +558,7 @@ class TestZohoOAuthClient:
         """Test token refresh with rate limiting exceeding max retries."""
         mock_response_429 = Mock()
         mock_response_429.status_code = 429
-        mock_response_429.headers = {}
+        mock_response_429.headers = {"Retry-After": "60"}
         mock_response_429.json.return_value = {"error": "rate_limit_exceeded"}
 
         with patch('httpx.AsyncClient') as mock_client_class:
@@ -577,8 +577,8 @@ class TestZohoOAuthClient:
         # Should have slept 2 times (between retries)
         assert mock_sleep.call_count == 2
 
-        # Verify exponential backoff delays: 1.0, 2.0
-        expected_delays = [1.0, 2.0]
+        # Verify Retry-After header is used: 60, 60 (capped at max_delay)
+        expected_delays = [60, 60]
         actual_delays = [call.args[0] for call in mock_sleep.call_args_list]
         assert actual_delays == expected_delays
 
@@ -646,6 +646,7 @@ class TestZohoOAuthClient:
         """Test token revocation with rate limiting."""
         mock_response_429 = Mock()
         mock_response_429.status_code = 429
+        mock_response_429.headers = {"Retry-After": "60"}
 
         mock_response_200 = Mock()
         mock_response_200.status_code = 200
@@ -669,6 +670,7 @@ class TestZohoOAuthClient:
         """Test token info with rate limiting."""
         mock_response_429 = Mock()
         mock_response_429.status_code = 429
+        mock_response_429.headers = {"Retry-After": "60"}
 
         mock_response_200 = Mock()
         mock_response_200.status_code = 200

@@ -1,0 +1,1484 @@
+{
+  "successful_calls": {
+    "/files/hui9647cb257be9684fe294205f6519388d14/folders": {
+      "data": [
+        {
+          "id": "c8p1g470d8763a60b44ccb6785386f38a1bed",
+          "type": "files",
+          "attributes": {
+            "active_workflow_instance": {},
+            "modified_by_zuid": "749221111",
+            "is_locked": false,
+            "conv_engine_type": 0,
+            "is_fillable_resource": false,
+            "is_published": false,
+            "destination_id": "hui9647cb257be9684fe294205f6519388d14",
+            "storage_info": {
+              "size": "9.66 GB",
+              "storage_used": "9.70 GB",
+              "files_count": 417,
+              "folders_count": 79,
+              "size_in_bytes": 10377641632,
+              "storage_used_in_bytes": 10414182258,
+              "storage_used_by_team_folders_in_bytes": 0,
+              "size_used_by_team_folders_in_bytes": 0,
+              "storage_used_by_workdrive_in_bytes": 0,
+              "storage_used_by_app_in_bytes": 0
+            },
+            "type": "folder",
+            "spam_info": {
+              "is_cur_res_spam": false,
+              "is_par_res_spam": false
+            },
+            "created_time_i18": "Nov 14, 2024, 2:49 PM",
+            "associated_data_templates": [],
+            "is_marked_final": false,
+            "modified_time_in_millisecond": 1731624705768,
+            "status_change_time": "Nov 14, 2024, 2:51 PM",
+            "role_id": 1,
+            "download_url": "https://workdrive.zoho.com/download/c8p1g470d8763a60b44ccb6785386f38a1bed",
+            "comment_badge_count": 0,
+            "is_app_associated": false,
+            "created_time": "Nov 14, 2024, 2:49 PM",
+            "lock_status": 2,
+            "is_folder": true,
+            "is_parent_customized": false,
+            "resource_type": 1001,
+            "is_email_in_upload": false,
+            "res_scope": 0,
+            "display_attr_name": "for&#x20;Redac",
+            "created_by": "Tomonari Yamashita",
+            "display_html_name": "for Redac",
+            "labels": [],
+            "parent_id": "hui9647cb257be9684fe294205f6519388d14",
+            "name": "for Redac",
+            "status_change_time_in_millisecond": 1731624705768,
+            "permalink": "https://workdrive.zoho.com/folder/c8p1g470d8763a60b44ccb6785386f38a1bed",
+            "favorite": false,
+            "new_badge_count": 0,
+            "status": 1,
+            "modified_time_i18": "Nov 14, 2024, 2:51 PM",
+            "extn": "",
+            "customized": false,
+            "view_pref": {
+              "sort_by": "last_modified",
+              "sort_order": "desc",
+              "filtered_by": "all",
+              "layout": "list",
+              "listing_columns": ""
+            },
+            "shortcut_link": "",
+            "status_change_time_i18": "Nov 14, 2024, 2:51 PM",
+            "description": "",
+            "uploaded_time_in_millisecond": 1731624568437,
+            "thumbnail_url": "",
+            "title": "",
+            "files_view_pref": {
+              "sort_by": "last_modified",
+              "sort_order": "desc",
+              "filtered_by": "all",
+              "layout": "list",
+              "listing_columns": ""
+            },
+            "modified_time": "Nov 14, 2024, 2:51 PM",
+            "library_id": "hui9647cb257be9684fe294205f6519388d14",
+            "icon_class": "folder",
+            "created_time_in_millisecond": 1731624568435,
+            "owner": "748509759",
+            "creator": "749221111",
+            "is_collection_associated": false,
+            "capabilities": {
+              "can_read": true,
+              "can_share": true,
+              "can_remove_share": false,
+              "can_delete": false,
+              "can_edit": true,
+              "can_partial_read": false,
+              "can_create_files": true,
+              "can_upload_files": true,
+              "can_trash": true,
+              "can_rename": true,
+              "can_restore": false,
+              "can_copy": true,
+              "can_move": true,
+              "can_zip": true,
+              "can_download": true,
+              "can_emailattach": true,
+              "can_publish": true,
+              "can_create_task": false,
+              "can_share_support": true,
+              "can_label": true,
+              "can_delist_file": false,
+              "can_associate_data_template": true,
+              "can_mandate_data_template": true,
+              "can_favorite": true,
+              "can_customize": true,
+              "can_configure_workflow": true,
+              "is_edit_restricted_via_workflow": false,
+              "can_show_activity": true,
+              "can_show_access_stats": true,
+              "can_mark_as_final": false,
+              "can_trash_files": true,
+              "can_open_with_addons": false,
+              "has_app_permission_alone": false
+            },
+            "uploaded_time_i18": "Nov 14, 2024, 2:49 PM",
+            "is_external_upload": false,
+            "watch_preference": {
+              "watch": false,
+              "notifyemail": false,
+              "notifybell": false
+            },
+            "opened_time_in_millisecond": 0,
+            "edit_badge_count": 0,
+            "share_data": [],
+            "uploaded_time": "Nov 14, 2024, 2:49 PM",
+            "has_folders": true,
+            "service_type": "upload",
+            "display_url_name": "for+Redac",
+            "is_unread": false,
+            "modified_by": "Tomonari Yamashita",
+            "creator_avatar_url": "https://contacts.zoho.com/file?t=user&ID=749221111&fs=thumb&nps=404",
+            "is_index_layout_file": false,
+            "embed_props": {}
+          },
+          "relationships": {
+            "folders": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/folders",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/folders"
+              }
+            },
+            "filequery": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/filequery",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/filequery"
+              }
+            },
+            "dlpsensitivecontentidentifiers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/dlpsensitivecontentidentifiers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/dlpsensitivecontentidentifiers"
+              }
+            },
+            "records": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/records",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/records"
+              }
+            },
+            "instances": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/instances",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/instances"
+              }
+            },
+            "unzip": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/unzip",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/unzip"
+              }
+            },
+            "performtransition": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/performtransition",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/performtransition"
+              }
+            },
+            "accesschartdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/accesschartdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/accesschartdata"
+              }
+            },
+            "resourceproperty": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/resourceproperty",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/resourceproperty"
+              }
+            },
+            "shortcut": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/shortcut",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/shortcut"
+              }
+            },
+            "importfile": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/importfile",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/importfile"
+              }
+            },
+            "permissions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/permissions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/permissions"
+              }
+            },
+            "saveastemplate": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/saveastemplate",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/saveastemplate"
+              }
+            },
+            "links": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/links",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/links"
+              }
+            },
+            "copy": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/copy",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/copy"
+              }
+            },
+            "previewzip": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/previewzip",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/previewzip"
+              }
+            },
+            "tasks": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/tasks",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/tasks"
+              }
+            },
+            "custommetadata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/custommetadata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/custommetadata"
+              }
+            },
+            "deletedversions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/deletedversions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/deletedversions"
+              }
+            },
+            "comments": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/comments",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/comments"
+              }
+            },
+            "previewinfo": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/previewinfo",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/previewinfo"
+              }
+            },
+            "approvedversions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/approvedversions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/approvedversions"
+              }
+            },
+            "publiclink": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/publiclink",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/publiclink"
+              }
+            },
+            "parentfolders": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/parentfolders",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/parentfolders"
+              }
+            },
+            "versions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/versions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/versions"
+              }
+            },
+            "supportshare": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/supportshare",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/supportshare"
+              }
+            },
+            "startjourney": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/startjourney",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/startjourney"
+              }
+            },
+            "recordsuggestions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/recordsuggestions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/recordsuggestions"
+              }
+            },
+            "timeline": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/timeline",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/timeline"
+              }
+            },
+            "files": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/files",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/files"
+              }
+            },
+            "accessdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/accessdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/accessdata"
+              }
+            },
+            "dlppolicy": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/dlppolicy",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/dlppolicy"
+              }
+            },
+            "breadcrumbs": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/breadcrumbs",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/breadcrumbs"
+              }
+            },
+            "entity": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/entity",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/entity"
+              }
+            },
+            "statistics": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/statistics",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/statistics"
+              }
+            },
+            "appdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/appdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/appdata"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed"
+          }
+        }
+      ]
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/files": {
+      "data": [
+        {
+          "id": "c8p1g470d8763a60b44ccb6785386f38a1bed",
+          "type": "files",
+          "attributes": {
+            "active_workflow_instance": {},
+            "modified_by_zuid": "749221111",
+            "is_locked": false,
+            "conv_engine_type": 0,
+            "is_fillable_resource": false,
+            "is_published": false,
+            "destination_id": "hui9647cb257be9684fe294205f6519388d14",
+            "storage_info": {
+              "size": "9.66 GB",
+              "storage_used": "9.70 GB",
+              "files_count": 417,
+              "folders_count": 79,
+              "size_in_bytes": 10377641632,
+              "storage_used_in_bytes": 10414182258,
+              "storage_used_by_team_folders_in_bytes": 0,
+              "size_used_by_team_folders_in_bytes": 0,
+              "storage_used_by_workdrive_in_bytes": 0,
+              "storage_used_by_app_in_bytes": 0
+            },
+            "type": "folder",
+            "spam_info": {
+              "is_cur_res_spam": false,
+              "is_par_res_spam": false
+            },
+            "created_time_i18": "Nov 14, 2024, 2:49 PM",
+            "associated_data_templates": [],
+            "is_marked_final": false,
+            "modified_time_in_millisecond": 1731624705768,
+            "status_change_time": "Nov 14, 2024, 2:51 PM",
+            "role_id": 1,
+            "download_url": "https://workdrive.zoho.com/download/c8p1g470d8763a60b44ccb6785386f38a1bed",
+            "comment_badge_count": 0,
+            "is_app_associated": false,
+            "created_time": "Nov 14, 2024, 2:49 PM",
+            "lock_status": 2,
+            "is_folder": true,
+            "is_parent_customized": false,
+            "resource_type": 1001,
+            "is_email_in_upload": false,
+            "res_scope": 0,
+            "display_attr_name": "for&#x20;Redac",
+            "created_by": "Tomonari Yamashita",
+            "display_html_name": "for Redac",
+            "labels": [],
+            "parent_id": "hui9647cb257be9684fe294205f6519388d14",
+            "name": "for Redac",
+            "status_change_time_in_millisecond": 1731624705768,
+            "permalink": "https://workdrive.zoho.com/folder/c8p1g470d8763a60b44ccb6785386f38a1bed",
+            "favorite": false,
+            "new_badge_count": 0,
+            "status": 1,
+            "modified_time_i18": "Nov 14, 2024, 2:51 PM",
+            "extn": "",
+            "customized": false,
+            "view_pref": {
+              "sort_by": "last_modified",
+              "sort_order": "desc",
+              "filtered_by": "all",
+              "layout": "list",
+              "listing_columns": ""
+            },
+            "shortcut_link": "",
+            "status_change_time_i18": "Nov 14, 2024, 2:51 PM",
+            "description": "",
+            "uploaded_time_in_millisecond": 1731624568437,
+            "thumbnail_url": "",
+            "title": "",
+            "files_view_pref": {
+              "sort_by": "last_modified",
+              "sort_order": "desc",
+              "filtered_by": "all",
+              "layout": "list",
+              "listing_columns": ""
+            },
+            "modified_time": "Nov 14, 2024, 2:51 PM",
+            "library_id": "hui9647cb257be9684fe294205f6519388d14",
+            "icon_class": "folder",
+            "created_time_in_millisecond": 1731624568435,
+            "owner": "748509759",
+            "creator": "749221111",
+            "is_collection_associated": false,
+            "capabilities": {
+              "can_read": true,
+              "can_share": true,
+              "can_remove_share": false,
+              "can_delete": false,
+              "can_edit": true,
+              "can_partial_read": false,
+              "can_create_files": true,
+              "can_upload_files": true,
+              "can_trash": true,
+              "can_rename": true,
+              "can_restore": false,
+              "can_copy": true,
+              "can_move": true,
+              "can_zip": true,
+              "can_download": true,
+              "can_emailattach": true,
+              "can_publish": true,
+              "can_create_task": false,
+              "can_share_support": true,
+              "can_label": true,
+              "can_delist_file": false,
+              "can_associate_data_template": true,
+              "can_mandate_data_template": true,
+              "can_favorite": true,
+              "can_customize": true,
+              "can_configure_workflow": true,
+              "is_edit_restricted_via_workflow": false,
+              "can_show_activity": true,
+              "can_show_access_stats": true,
+              "can_mark_as_final": false,
+              "can_trash_files": true,
+              "can_open_with_addons": false,
+              "has_app_permission_alone": false
+            },
+            "uploaded_time_i18": "Nov 14, 2024, 2:49 PM",
+            "is_external_upload": false,
+            "watch_preference": {
+              "watch": false,
+              "notifyemail": false,
+              "notifybell": false
+            },
+            "opened_time_in_millisecond": 0,
+            "edit_badge_count": 0,
+            "share_data": [],
+            "uploaded_time": "Nov 14, 2024, 2:49 PM",
+            "has_folders": true,
+            "service_type": "upload",
+            "display_url_name": "for+Redac",
+            "is_unread": false,
+            "modified_by": "Tomonari Yamashita",
+            "creator_avatar_url": "https://contacts.zoho.com/file?t=user&ID=749221111&fs=thumb&nps=404",
+            "is_index_layout_file": false,
+            "embed_props": {}
+          },
+          "relationships": {
+            "folders": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/folders",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/folders"
+              }
+            },
+            "filequery": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/filequery",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/filequery"
+              }
+            },
+            "dlpsensitivecontentidentifiers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/dlpsensitivecontentidentifiers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/dlpsensitivecontentidentifiers"
+              }
+            },
+            "records": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/records",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/records"
+              }
+            },
+            "instances": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/instances",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/instances"
+              }
+            },
+            "unzip": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/unzip",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/unzip"
+              }
+            },
+            "performtransition": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/performtransition",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/performtransition"
+              }
+            },
+            "accesschartdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/accesschartdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/accesschartdata"
+              }
+            },
+            "resourceproperty": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/resourceproperty",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/resourceproperty"
+              }
+            },
+            "shortcut": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/shortcut",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/shortcut"
+              }
+            },
+            "importfile": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/importfile",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/importfile"
+              }
+            },
+            "permissions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/permissions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/permissions"
+              }
+            },
+            "saveastemplate": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/saveastemplate",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/saveastemplate"
+              }
+            },
+            "links": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/links",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/links"
+              }
+            },
+            "copy": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/copy",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/copy"
+              }
+            },
+            "previewzip": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/previewzip",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/previewzip"
+              }
+            },
+            "tasks": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/tasks",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/tasks"
+              }
+            },
+            "custommetadata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/custommetadata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/custommetadata"
+              }
+            },
+            "deletedversions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/deletedversions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/deletedversions"
+              }
+            },
+            "comments": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/comments",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/comments"
+              }
+            },
+            "previewinfo": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/previewinfo",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/previewinfo"
+              }
+            },
+            "approvedversions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/approvedversions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/approvedversions"
+              }
+            },
+            "publiclink": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/publiclink",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/publiclink"
+              }
+            },
+            "parentfolders": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/parentfolders",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/parentfolders"
+              }
+            },
+            "versions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/versions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/versions"
+              }
+            },
+            "supportshare": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/supportshare",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/supportshare"
+              }
+            },
+            "startjourney": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/startjourney",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/startjourney"
+              }
+            },
+            "recordsuggestions": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/recordsuggestions",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/recordsuggestions"
+              }
+            },
+            "timeline": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/timeline",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/timeline"
+              }
+            },
+            "files": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/files",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/files"
+              }
+            },
+            "accessdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/accessdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/accessdata"
+              }
+            },
+            "dlppolicy": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/dlppolicy",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/dlppolicy"
+              }
+            },
+            "breadcrumbs": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/breadcrumbs",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/breadcrumbs"
+              }
+            },
+            "entity": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/entity",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/entity"
+              }
+            },
+            "statistics": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/statistics",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/statistics"
+              }
+            },
+            "appdata": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/relationships/appdata",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed/appdata"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/files/c8p1g470d8763a60b44ccb6785386f38a1bed"
+          }
+        }
+      ]
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/permissions": {
+      "data": [
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-749221111",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "yamashita@fsi-america.com",
+            "shared_time_in_millis": 1731533693863,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Tomonari Yamashita",
+              "email_id": "yamashita@fsi-america.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=749221111&fs=thumb&nps=404"
+            },
+            "share_to_member_type": -1,
+            "role_id": 1,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Tomonari Yamashita",
+            "message": "",
+            "share_to": "749221111",
+            "is_expired": false,
+            "shared_to_member_type": -1,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=749221111&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-749221111/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-749221111/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-749221111"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-2906173000005673015",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "shared_time_in_millis": 1731533696471,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Redac: Salesforce CRM System_Admin",
+              "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+              "type": 3,
+              "collaborators_count": 6
+            },
+            "share_to_member_type": 1,
+            "role_id": 1,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "groupmembers",
+            "send_notification_mail": false,
+            "shared_to_entity": "Redac: Salesforce CRM System_Admin",
+            "delete_from_propagated_space": false,
+            "display_name": "Redac: Salesforce CRM System_Admin",
+            "message": "",
+            "share_to": "ntvsh862341c4d57b4446b047e7f1271cbeaf-2906173000005673015",
+            "app_share_data": {
+              "app_data": {
+                "app_key": "1003.04HE4XBVHZORQT291CZUHBLSYD9TPH",
+                "app_name": "Zoho Projects / BugTracker",
+                "installation_key": "22290CB491D98DCE8F143573165EF365"
+              }
+            },
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005673015/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005673015/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005673015"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-2906173000005683024",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "shared_time_in_millis": 1731533696482,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Redac: Salesforce CRM System_Employee",
+              "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+              "type": 3,
+              "collaborators_count": 6
+            },
+            "share_to_member_type": 1,
+            "role_id": 5,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "groupmembers",
+            "send_notification_mail": false,
+            "shared_to_entity": "Redac: Salesforce CRM System_Employee",
+            "delete_from_propagated_space": false,
+            "display_name": "Redac: Salesforce CRM System_Employee",
+            "message": "",
+            "share_to": "ntvsh862341c4d57b4446b047e7f1271cbeaf-2906173000005683024",
+            "app_share_data": {
+              "app_data": {
+                "app_key": "1003.04HE4XBVHZORQT291CZUHBLSYD9TPH",
+                "app_name": "Zoho Projects / BugTracker",
+                "installation_key": "22290CB491D98DCE8F143573165EF365"
+              }
+            },
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683024/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683024/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683024"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-2906173000005674005",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "shared_time_in_millis": 1731533696488,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Redac: Salesforce CRM System_Manager",
+              "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+              "type": 3,
+              "collaborators_count": 3
+            },
+            "share_to_member_type": 1,
+            "role_id": 2,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "groupmembers",
+            "send_notification_mail": false,
+            "shared_to_entity": "Redac: Salesforce CRM System_Manager",
+            "delete_from_propagated_space": false,
+            "display_name": "Redac: Salesforce CRM System_Manager",
+            "message": "",
+            "share_to": "ntvsh862341c4d57b4446b047e7f1271cbeaf-2906173000005674005",
+            "app_share_data": {
+              "app_data": {
+                "app_key": "1003.04HE4XBVHZORQT291CZUHBLSYD9TPH",
+                "app_name": "Zoho Projects / BugTracker",
+                "installation_key": "22290CB491D98DCE8F143573165EF365"
+              }
+            },
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005674005/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005674005/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005674005"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-2906173000005683021",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "shared_time_in_millis": 1731533696496,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Redac: Salesforce CRM System_Contractor",
+              "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+              "type": 3,
+              "collaborators_count": 2
+            },
+            "share_to_member_type": 1,
+            "role_id": 6,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "groupmembers",
+            "send_notification_mail": false,
+            "shared_to_entity": "Redac: Salesforce CRM System_Contractor",
+            "delete_from_propagated_space": false,
+            "display_name": "Redac: Salesforce CRM System_Contractor",
+            "message": "",
+            "share_to": "ntvsh862341c4d57b4446b047e7f1271cbeaf-2906173000005683021",
+            "app_share_data": {
+              "app_data": {
+                "app_key": "1003.04HE4XBVHZORQT291CZUHBLSYD9TPH",
+                "app_name": "Zoho Projects / BugTracker",
+                "installation_key": "22290CB491D98DCE8F143573165EF365"
+              }
+            },
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://static.zohocdn.com/personal/stable/jsapps/ui-lab/dist/assets/dev/svg-icons/common/groups_logo-d71db3402e7a93e6455fca416b4acb9e.svg",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683021/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683021/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-2906173000005683021"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-734278158",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "nakajima@fsi-america.com",
+            "shared_time_in_millis": 1731533696506,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Tsunehisa Nakajima",
+              "email_id": "nakajima@fsi-america.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=734278158&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 1,
+            "role_id": 1,
+            "shared_time_i18": "Nov 13, 2024, 1:34 PM",
+            "shared_time": "Nov 13, 2024, 1:34 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Tsunehisa Nakajima",
+            "message": "",
+            "share_to": "734278158",
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=734278158&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-734278158/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-734278158/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-734278158"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-634783244",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "saotome@fsi-america.com",
+            "shared_time_in_millis": 1731624811835,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Takuei Saotome",
+              "email_id": "saotome@fsi-america.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=634783244&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 1,
+            "role_id": 1,
+            "shared_time_i18": "Nov 14, 2024, 2:53 PM",
+            "shared_time": "Nov 14, 2024, 2:53 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Takuei Saotome",
+            "message": "",
+            "share_to": "634783244",
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=634783244&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-634783244/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-634783244/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-634783244"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-791203515",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "yamadash@fsi.co.jp",
+            "shared_time_in_millis": 1736214222721,
+            "shared_by": "Tsunehisa Nakajima",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Shigeo Yamada",
+              "email_id": "yamadash@fsi.co.jp",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=791203515&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 2,
+            "role_id": 5,
+            "shared_time_i18": "Jan 6, 5:43 PM",
+            "shared_time": "Jan 6, 5:43 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Shigeo Yamada",
+            "message": "",
+            "share_to": "791203515",
+            "is_expired": false,
+            "shared_to_member_type": 2,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=791203515&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "734278158"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-791203515/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-791203515/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-791203515"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-877136711",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "wuyishu@fsi.co.jp",
+            "shared_time_in_millis": 1738293611911,
+            "shared_by": "Tomonari Yamashita",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Yi Shu Wu",
+              "email_id": "wuyishu@fsi.co.jp",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=877136711&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 1,
+            "role_id": 5,
+            "shared_time_i18": "Jan 30, 7:20 PM",
+            "shared_time": "Jan 30, 7:20 PM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Yi Shu Wu",
+            "message": "",
+            "share_to": "877136711",
+            "is_expired": false,
+            "shared_to_member_type": 1,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=877136711&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "749221111"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-877136711/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-877136711/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-877136711"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-871474282",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "yoichiro.nakamura@redacinc.com",
+            "shared_time_in_millis": 1745344067407,
+            "shared_by": "Takuei Saotome",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Yoichiro Nakamura",
+              "email_id": "yoichiro.nakamura@redacinc.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871474282&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 2,
+            "role_id": 2,
+            "shared_time_i18": "Apr 22, 10:47 AM",
+            "shared_time": "Apr 22, 10:47 AM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Yoichiro Nakamura",
+            "message": "",
+            "share_to": "871474282",
+            "is_expired": false,
+            "shared_to_member_type": 2,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871474282&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "634783244"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474282/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474282/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474282"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-871474653",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "amatsubara@redacinc.com",
+            "shared_time_in_millis": 1745344067411,
+            "shared_by": "Takuei Saotome",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Ayui Matsubara",
+              "email_id": "amatsubara@redacinc.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871474653&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 2,
+            "role_id": 2,
+            "shared_time_i18": "Apr 22, 10:47 AM",
+            "shared_time": "Apr 22, 10:47 AM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Ayui Matsubara",
+            "message": "",
+            "share_to": "871474653",
+            "is_expired": false,
+            "shared_to_member_type": 2,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871474653&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "634783244"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474653/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474653/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871474653"
+          }
+        },
+        {
+          "id": "hui9647cb257be9684fe294205f6519388d14-871475325",
+          "type": "permissions",
+          "attributes": {
+            "is_shared_via_workflow": false,
+            "email_id": "ynarasaki@redacinc.com",
+            "shared_time_in_millis": 1745344067415,
+            "shared_by": "Takuei Saotome",
+            "expiry_in_millis": 0,
+            "relation_type": 0,
+            "expiration_date": "",
+            "type": "workspace",
+            "share_to_entity_info": {
+              "display_name": "Yuka Narasaki",
+              "email_id": "ynarasaki@redacinc.com",
+              "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871475325&fs=thumb&nps=404"
+            },
+            "share_to_member_type": 2,
+            "role_id": 2,
+            "shared_time_i18": "Apr 22, 10:47 AM",
+            "shared_time": "Apr 22, 10:47 AM",
+            "shared_status": "ACTIVE",
+            "is_shared_to_part_of_lib": false,
+            "can_link_to_docs": true,
+            "owner": "748509759",
+            "allow_sharing_outside": false,
+            "shared_type": "workspace",
+            "send_notification_mail": false,
+            "delete_from_propagated_space": false,
+            "display_name": "Yuka Narasaki",
+            "message": "",
+            "share_to": "871475325",
+            "is_expired": false,
+            "shared_to_member_type": 2,
+            "avatar_url": "https://contacts.zoho.com/file?t=user&ID=871475325&fs=thumb&nps=404",
+            "is_password_protected": false,
+            "resource_id": "hui9647cb257be9684fe294205f6519388d14",
+            "permalink": "https://workdrive.zoho.com/file/hui9647cb257be9684fe294205f6519388d14",
+            "shared_by_zuid": "634783244"
+          },
+          "relationships": {
+            "integrationentitymembers": {
+              "links": {
+                "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871475325/relationships/integrationentitymembers",
+                "related": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871475325/integrationentitymembers"
+              }
+            }
+          },
+          "links": {
+            "self": "https://www.zohoapis.com/workdrive/api/v1/permissions/hui9647cb257be9684fe294205f6519388d14-871475325"
+          }
+        }
+      ]
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/links": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/tasks": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/instances": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/resourceproperty": {
+      "data": {
+        "id": "hui9647cb257be9684fe294205f6519388d14",
+        "type": "resourceproperty",
+        "attributes": {
+          "dlp_info": {
+            "dlp_meta_info": [],
+            "dlp_top_level_actions": {
+              "can_restrict_download": false,
+              "can_restrict_share": false,
+              "can_warn_on_share": false
+            }
+          },
+          "count_info": {
+            "preview_count": 0,
+            "download_count": 0
+          },
+          "storage_info": {
+            "size": "9.66 GB",
+            "storage_used": "9.70 GB",
+            "files_count": 415,
+            "folders_count": 80,
+            "size_in_bytes": 10377575121,
+            "storage_used_in_bytes": 10414040010,
+            "storage_used_by_team_folders_in_bytes": 0,
+            "size_used_by_team_folders_in_bytes": 0,
+            "storage_used_by_workdrive_in_bytes": 0,
+            "storage_used_by_app_in_bytes": 0
+          }
+        },
+        "links": {
+          "self": "https://www.zohoapis.com/workdrive/api/v1/resourceproperty/hui9647cb257be9684fe294205f6519388d14"
+        }
+      }
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/custommetadata": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/previewinfo": {
+      "data": {
+        "type": "previewinfo",
+        "attributes": {
+          "is_download_server_file": false,
+          "isdeveloper_file": false,
+          "preview_status": 0,
+          "resource_type_modified": false
+        },
+        "links": {
+          "self": "https://www.zohoapis.com/workdrive/api/v1/previewinfo/null"
+        }
+      }
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/approvedversions": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/parentfolders": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/versions": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/supportshare": {
+      "data": []
+    },
+    "/files/hui9647cb257be9684fe294205f6519388d14/recordsuggestions": {
+      "data": []
+    }
+  },
+  "team_folders_discovered": [],
+  "workspaces_discovered": [],
+  "users_discovered": [],
+  "high_privilege_access": [],
+  "errors": {},
+  "summary": {
+    "successful_endpoints": 14,
+    "team_folders_found": 0,
+    "workspaces_found": 0,
+    "users_found": 0,
+    "high_privilege_access": 0
+  }
+}

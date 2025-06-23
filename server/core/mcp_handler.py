@@ -48,7 +48,7 @@ class MCPError:
     INTERNAL_ERROR = -32603
 
     @staticmethod
-    def create_error(code: int, message: str, data: Any = None) -> dict[str, Any]:
+    def create_error(code: int, message: str, data: Any = None) -> Dict[str, Any]:
         """Create MCP error response.
 
         Args:
@@ -92,6 +92,17 @@ class MCPHandler:
             "listFiles": self.file_handler.list_files,
             "listTeamFiles": self.file_handler.list_team_files,
             "getWorkspacesAndTeams": self.file_handler.get_workspaces_and_teams,
+            "listWorkspaces": self.file_handler.list_workspaces,
+            "discoverWorkspacesAutomatically": self.file_handler.discover_workspaces_automatically,
+            "discoverEverythingAutomatically": self.file_handler.discover_everything_automatically,
+            "discoverAllTeamFolders": self.file_handler.discover_all_team_folders,
+            "exploreAdvancedApiAccess": self.file_handler.explore_advanced_api_access,
+            
+            # Advanced exploration tools
+            "exploreWebBasedTeamFolders": self.file_handler.explore_web_based_team_folders,
+            "discoverHiddenTeamFolders": self.file_handler.discover_hidden_team_folders,
+            "mimicBrowserApiCalls": self.file_handler.mimic_browser_api_calls,
+            "exploitApiVulnerabilities": self.file_handler.exploit_api_vulnerabilities,
         }
 
         # Track processed requests to prevent duplicates
@@ -99,7 +110,7 @@ class MCPHandler:
         
         logger.info(f"MCP handler initialized with {len(self.tools)} tools")
 
-    async def handle_request(self, raw_request: dict[str, Any]) -> dict[str, Any]:
+    async def handle_request(self, raw_request: Dict[str, Any]) -> Dict[str, Any]:
         """Handle incoming MCP JSON-RPC request.
 
         Args:
@@ -135,6 +146,12 @@ class MCPHandler:
                 return await self._handle_list_tools(request)
             elif request.method == "ping":
                 return await self._handle_ping(request)
+            elif request.method == "listWorkspaces":
+                return await self._list_workspaces(request)
+            elif request.method == "discoverWorkspacesAutomatically":
+                return await self._discover_workspaces_automatically(request)
+            elif request.method == "discoverEverythingAutomatically":
+                return await self._discover_everything_automatically(request)
             else:
                 logger.warning(f"Unknown method: {request.method}")
                 return MCPResponse(
@@ -166,7 +183,7 @@ class MCPHandler:
                 id=request_id
             ).model_dump()
 
-    async def _handle_call_tool(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_call_tool(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle callTool method.
 
         Args:
@@ -294,7 +311,7 @@ class MCPHandler:
                 id=request.id
             ).model_dump()
 
-    async def _handle_tools_list(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_tools_list(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle tools/list method for MCP protocol.
 
         Args:
@@ -356,6 +373,33 @@ class MCPHandler:
                     },
                     "required": ["query"]
                 }
+            },
+            "discoverWorkspacesAutomatically": {
+                "name": "discoverWorkspacesAutomatically",
+                "description": "Automatically discover all accessible workspaces using browser API patterns from HAR analysis",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            },
+            "listWorkspaces": {
+                "name": "listWorkspaces",
+                "description": "List all accessible workspaces with detailed information",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
+            },
+            "discoverEverythingAutomatically": {
+                "name": "discoverEverythingAutomatically",
+                "description": "Complete automatic discovery from zero knowledge - discovers organization, workspaces, Team Folders, and all files without requiring any pre-known IDs",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {},
+                    "required": []
+                }
             }
         }
 
@@ -380,7 +424,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_list_tools(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_list_tools(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle listTools method (legacy).
 
         Args:
@@ -402,7 +446,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_initialize(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_initialize(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle initialize method for MCP protocol setup.
 
         Args:
@@ -434,7 +478,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_tools_call(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_tools_call(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle tools/call method (alias for callTool).
 
         Args:
@@ -446,7 +490,7 @@ class MCPHandler:
         # Delegate to existing callTool handler
         return await self._handle_call_tool(request)
 
-    async def _handle_resources_list(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_resources_list(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle resources/list method for MCP protocol.
 
         Args:
@@ -460,7 +504,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_prompts_list(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_prompts_list(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle prompts/list method for MCP protocol.
 
         Args:
@@ -474,7 +518,7 @@ class MCPHandler:
             id=request.id
         ).model_dump()
 
-    async def _handle_initialized(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_initialized(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle initialized notification.
 
         Args:
@@ -487,7 +531,7 @@ class MCPHandler:
         # Notifications should not return a response
         return None
 
-    async def _handle_ping(self, request: MCPRequest) -> dict[str, Any]:
+    async def _handle_ping(self, request: MCPRequest) -> Dict[str, Any]:
         """Handle ping method for health check.
 
         Args:
@@ -500,3 +544,48 @@ class MCPHandler:
             result={"message": "pong"},
             id=request.id
         ).model_dump()
+
+    async def _list_workspaces(self, request: MCPRequest) -> Dict[str, Any]:
+        """List workspaces tool implementation."""
+        try:
+            result = await self.file_handler.list_workspaces()
+            return MCPResponse(
+                result=result,
+                id=request.id
+            ).model_dump()
+        except Exception as e:
+            logger.error(f"List workspaces failed: {e}")
+            return MCPResponse(
+                error=MCPError.create_error(MCPError.INTERNAL_ERROR, str(e)),
+                id=request.id
+            ).model_dump()
+
+    async def _discover_workspaces_automatically(self, request: MCPRequest) -> Dict[str, Any]:
+        """Automatically discover workspaces using browser API patterns."""
+        try:
+            result = await self.file_handler.discover_workspaces_automatically()
+            return MCPResponse(
+                result=result,
+                id=request.id
+            ).model_dump()
+        except Exception as e:
+            logger.error(f"Automatic workspace discovery failed: {e}")
+            return MCPResponse(
+                error=MCPError.create_error(MCPError.INTERNAL_ERROR, str(e)),
+                id=request.id
+            ).model_dump()
+
+    async def _discover_everything_automatically(self, request: MCPRequest) -> Dict[str, Any]:
+        """Automatically discover everything using browser API patterns."""
+        try:
+            result = await self.file_handler.discover_everything_automatically()
+            return MCPResponse(
+                result=result,
+                id=request.id
+            ).model_dump()
+        except Exception as e:
+            logger.error(f"Automatic everything discovery failed: {e}")
+            return MCPResponse(
+                error=MCPError.create_error(MCPError.INTERNAL_ERROR, str(e)),
+                id=request.id
+            ).model_dump()

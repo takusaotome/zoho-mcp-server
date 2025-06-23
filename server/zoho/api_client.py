@@ -2,7 +2,7 @@
 
 import asyncio
 import logging
-from typing import Any, Union, Optional
+from typing import Any, Union, Optional, Dict, Type
 from types import TracebackType
 
 import httpx
@@ -65,14 +65,14 @@ class ZohoAPIClient:
 
     async def __aexit__(
         self,
-        exc_type: Optional[type[BaseException]],
+        exc_type: Optional[Type[BaseException]],
         exc_val: Optional[BaseException],
         exc_tb: Optional[TracebackType]
     ) -> None:
         """Async context manager exit."""
         await self.close()
 
-    async def _get_headers(self, use_workdrive: bool = False) -> dict[str, str]:
+    async def _get_headers(self, use_workdrive: bool = False) -> Dict[str, str]:
         """Get request headers with authentication token.
 
         Args:
@@ -98,7 +98,7 @@ class ZohoAPIClient:
         use_workdrive: bool = False,
         retry: bool = False,
         **kwargs
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make HTTP request to Zoho API with retry logic.
 
         Args:
@@ -161,7 +161,7 @@ class ZohoAPIClient:
         response: httpx.Response,
         attempt: int,
         max_attempts: int
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Handle API response and errors.
 
         Args:
@@ -237,11 +237,11 @@ class ZohoAPIClient:
     async def get(
         self,
         endpoint: str,
-        params: Optional[dict[str, Any]] = None,
-        headers: Optional[dict[str, str]] = None,
+        params: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make GET request to Zoho API.
 
         Args:
@@ -271,12 +271,13 @@ class ZohoAPIClient:
     async def post(
         self,
         endpoint: str,
-        json: Optional[dict[str, Any]] = None,
-        data: Optional[dict[str, Any]] = None,
-        files: Optional[dict[str, Any]] = None,
+        json: Optional[Dict[str, Any]] = None,
+        data: Optional[Dict[str, Any]] = None,
+        files: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make POST request to Zoho API.
 
         Args:
@@ -284,6 +285,7 @@ class ZohoAPIClient:
             json: JSON payload
             data: Form data
             files: Files to upload
+            headers: Additional headers
             use_workdrive: Use WorkDrive API
             retry: Enable retry logic
 
@@ -291,11 +293,11 @@ class ZohoAPIClient:
             API response data
         """
         kwargs = {}
-        headers = {}
+        request_headers = {}
 
         if files:
             # For file uploads, don't set Content-Type (let httpx handle it)
-            headers.pop("Content-Type", None)
+            request_headers.pop("Content-Type", None)
             kwargs["files"] = files
 
         if data:
@@ -305,7 +307,10 @@ class ZohoAPIClient:
             kwargs["json"] = json
 
         if headers:
-            kwargs["headers"] = headers
+            request_headers.update(headers)
+
+        if request_headers:
+            kwargs["headers"] = request_headers
 
         return await self._make_request(
             "POST",
@@ -318,15 +323,17 @@ class ZohoAPIClient:
     async def put(
         self,
         endpoint: str,
-        json: Optional[dict[str, Any]] = None,
+        json: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make PUT request to Zoho API.
 
         Args:
             endpoint: API endpoint
             json: JSON payload
+            headers: Additional headers
             use_workdrive: Use WorkDrive API
             retry: Enable retry logic
 
@@ -336,9 +343,10 @@ class ZohoAPIClient:
         return await self._make_request(
             "PUT",
             endpoint,
+            json=json,
+            headers=headers,
             use_workdrive=use_workdrive,
-            retry=retry,
-            json=json
+            retry=retry
         )
 
     async def delete(
@@ -346,12 +354,12 @@ class ZohoAPIClient:
         endpoint: str,
         use_workdrive: bool = False,
         retry: bool = True
-    ) -> dict[str, Any]:
+    ) -> Dict[str, Any]:
         """Make DELETE request to Zoho API.
 
         Args:
             endpoint: API endpoint
-            use_workdrive: Use WorkDrive API
+            use_workdrive: Use WorkDrive API base URL
             retry: Enable retry logic
 
         Returns:
@@ -360,6 +368,92 @@ class ZohoAPIClient:
         return await self._make_request(
             "DELETE",
             endpoint,
+            use_workdrive=use_workdrive,
+            retry=retry
+        )
+
+    async def head(
+        self,
+        endpoint: str,
+        headers: Optional[Dict[str, str]] = None,
+        use_workdrive: bool = False,
+        retry: bool = True
+    ) -> Dict[str, Any]:
+        """Make HEAD request to Zoho API.
+
+        Args:
+            endpoint: API endpoint
+            headers: Additional headers
+            use_workdrive: Use WorkDrive API base URL
+            retry: Enable retry logic
+
+        Returns:
+            Response headers as dict
+        """
+        try:
+            response = await self._make_request(
+                "HEAD",
+                endpoint,
+                headers=headers,
+                use_workdrive=use_workdrive,
+                retry=retry
+            )
+            return response
+        except Exception:
+            # HEAD requests might not return JSON, return empty dict
+            return {}
+
+    async def options(
+        self,
+        endpoint: str,
+        headers: Optional[Dict[str, str]] = None,
+        use_workdrive: bool = False,
+        retry: bool = True
+    ) -> Dict[str, Any]:
+        """Make OPTIONS request to Zoho API.
+
+        Args:
+            endpoint: API endpoint
+            headers: Additional headers
+            use_workdrive: Use WorkDrive API base URL
+            retry: Enable retry logic
+
+        Returns:
+            API response data
+        """
+        return await self._make_request(
+            "OPTIONS",
+            endpoint,
+            headers=headers,
+            use_workdrive=use_workdrive,
+            retry=retry
+        )
+
+    async def patch(
+        self,
+        endpoint: str,
+        json: Optional[Dict[str, Any]] = None,
+        headers: Optional[Dict[str, str]] = None,
+        use_workdrive: bool = False,
+        retry: bool = True
+    ) -> Dict[str, Any]:
+        """Make PATCH request to Zoho API.
+
+        Args:
+            endpoint: API endpoint
+            json: JSON data to send
+            headers: Additional headers
+            use_workdrive: Use WorkDrive API base URL
+            retry: Enable retry logic
+
+        Returns:
+            API response data
+        """
+        return await self._make_request(
+            "PATCH",
+            endpoint,
+            json=json,
+            headers=headers,
             use_workdrive=use_workdrive,
             retry=retry
         )

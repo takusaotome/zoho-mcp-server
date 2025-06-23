@@ -145,7 +145,12 @@ class TestIPAllowlistMiddleware:
         request.headers = {"X-Forwarded-For": "192.168.1.100, 10.0.0.1"}
         request.client.host = "10.0.0.1"
 
-        middleware = IPAllowlistMiddleware(app=Mock(), allowed_ips=["192.168.1.0/24"])
+        # Configure middleware with trusted proxy to enable forwarded header processing
+        middleware = IPAllowlistMiddleware(
+            app=Mock(), 
+            allowed_ips=["192.168.1.0/24"],
+            trusted_proxies=["10.0.0.0/24"]  # Trust the proxy network
+        )
         client_ip = middleware._get_client_ip(request)
 
         assert client_ip == "192.168.1.100"
