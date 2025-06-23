@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/Users/takueisaotome/PycharmProjects/zoho-mcp-server/venv/bin/python
 """Stdio-based MCP server for Cursor compatibility."""
 
 import asyncio
@@ -9,6 +9,10 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
+# Add project root to Python path
+project_root = Path(__file__).parent.parent
+sys.path.insert(0, str(project_root))
+
 from server.core.mcp_handler import MCPHandler
 
 # Configure logging to file (stdout is used for MCP communication)
@@ -18,10 +22,12 @@ log_dir.mkdir(exist_ok=True)
 log_file = log_dir / "mcp_server.log"
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    filename=str(log_file),
-    filemode='a'
+    handlers=[
+        logging.FileHandler(str(log_file), mode='a'),
+        logging.StreamHandler(sys.stderr)  # Also log to stderr for debugging
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -64,7 +70,10 @@ class StdioMCPServer:
     async def run(self):
         """Run the stdio MCP server main loop."""
         logger.info("Starting stdio MCP server...")
-
+        logger.info(f"Working directory: {Path.cwd()}")
+        logger.info(f"Python executable: {sys.executable}")
+        logger.info(f"Python path: {sys.path[:3]}...")
+        
         try:
             while True:
                 # Read request from stdin
@@ -118,9 +127,9 @@ class StdioMCPServer:
                         logger.info(f"Sent response for method: {request_data.get('method', 'unknown')}")
                         logger.info(f"Response size: {len(response_json)} bytes")
                         logger.info(f"Response ID: {response.get('id')}")
-                        logger.info(f"Response flushed to stdout")
+                        logger.info("Response flushed to stdout")
                     else:
-                        logger.info(f"Notification processed, no response sent: {request_data.get('method', 'unknown')}")
+                        logger.info("Notification processed, no response sent: %s", request_data.get('method', 'unknown'))
 
                 except Exception as e:
                     logger.error(f"Error in main loop: {e}")

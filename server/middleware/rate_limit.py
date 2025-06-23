@@ -1,7 +1,9 @@
 """Rate limiting middleware for Zoho MCP Server."""
 
+import asyncio
 import logging
 import time
+import threading
 from typing import Any, Dict, List, Optional
 
 from fastapi import Request, Response
@@ -19,7 +21,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         app: Any,
         calls: int = 100,
         period: int = 60,
-        bypass_paths: Optional[List[str]] = None
+        bypass_paths: Optional[List[str]] = None,
+        redis_client=None,
+        trusted_proxies: Optional[List[str]] = None
     ) -> None:
         """Initialize rate limiting middleware.
 
@@ -28,16 +32,25 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             calls: Number of calls allowed per period
             period: Time period in seconds
             bypass_paths: List of paths that bypass rate limiting
+            redis_client: Redis client for distributed rate limiting
+            trusted_proxies: List of trusted proxy IP addresses
         """
         super().__init__(app)
         self.calls = calls
         self.period = period
         self.bypass_paths = bypass_paths or ["/health", "/docs", "/openapi.json"]
+        self.redis_client = redis_client
+        self.trusted_proxies = set(trusted_proxies or [])
 
-        # In-memory storage for rate limiting (use Redis in production)
+        # Thread-safe in-memory storage for when Redis is unavailable
         self.clients: Dict[str, Dict[str, Any]] = {}
+        self._lock = threading.RLock()
 
         logger.info(f"Rate limiting initialized: {calls} calls per {period} seconds")
+        if redis_client:
+            logger.info("Using Redis for distributed rate limiting")
+        else:
+            logger.warning("Using in-memory storage - not suitable for production with multiple instances")
 
     def _get_client_identifier(self, request: Request) -> str:
         """Get client identifier for rate limiting.
@@ -48,18 +61,24 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         Returns:
             Client identifier (IP address)
         """
-        # Check for forwarded headers
-        forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
-            client_ip = forwarded_for.split(",")[0].strip()
-        else:
+        # Get the immediate client IP
+        immediate_client = request.client.host if request.client else "unknown"
+
+        # Only trust forwarded headers if they come from trusted proxies
+        if self.trusted_proxies and immediate_client in self.trusted_proxies:
+            # Check for forwarded headers from trusted proxy
+            forwarded_for = request.headers.get("X-Forwarded-For")
+            if forwarded_for:
+                client_ip = forwarded_for.split(",")[0].strip()
+                return client_ip
+
+            # Check for real IP header from trusted proxy
             real_ip = request.headers.get("X-Real-IP")
             if real_ip:
-                client_ip = real_ip.strip()
-            else:
-                client_ip = request.client.host if request.client else "unknown"
+                return real_ip.strip()
 
-        return client_ip
+        # Use immediate client IP if no trusted proxy headers
+        return immediate_client
 
     def _should_bypass_check(self, path: str) -> bool:
         """Check if path should bypass rate limiting.
@@ -96,8 +115,53 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         for client_id in expired_clients:
             del self.clients[client_id]
 
-    def _is_rate_limited(self, client_id: str) -> tuple[bool, int, float]:
-        """Check if client is rate limited.
+    async def _is_rate_limited_redis(self, client_id: str) -> tuple[bool, int, float]:
+        """Check if client is rate limited using Redis.
+
+        Args:
+            client_id: Client identifier
+
+        Returns:
+            Tuple of (is_limited, remaining_calls, reset_time)
+        """
+        current_time = time.time()
+        key = f"rate_limit:{client_id}"
+
+        try:
+            # Use Redis atomic operations for thread safety
+            pipe = self.redis_client.pipeline()
+            pipe.zremrangebyscore(key, 0, current_time - self.period)  # Remove expired entries
+            pipe.zcard(key)  # Count current entries
+            pipe.expire(key, self.period)  # Set expiration
+            results = await pipe.execute()
+
+            current_count = results[1]
+
+            if current_count >= self.calls:
+                # Get the oldest request to calculate reset time
+                oldest_requests = await self.redis_client.zrange(key, 0, 0, withscores=True)
+                if oldest_requests:
+                    reset_time = oldest_requests[0][1] + self.period
+                else:
+                    reset_time = current_time + self.period
+                return True, 0, reset_time
+
+            # Add current request
+            await self.redis_client.zadd(key, {str(current_time): current_time})
+            await self.redis_client.expire(key, self.period)
+
+            remaining_calls = self.calls - (current_count + 1)
+            reset_time = current_time + self.period
+
+            return False, remaining_calls, reset_time
+
+        except Exception as e:
+            logger.error(f"Redis rate limiting error: {e}")
+            # Fallback to in-memory rate limiting
+            return self._is_rate_limited_memory(client_id)
+
+    def _is_rate_limited_memory(self, client_id: str) -> tuple[bool, int, float]:
+        """Check if client is rate limited using thread-safe in-memory storage.
 
         Args:
             client_id: Client identifier
@@ -107,41 +171,56 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         """
         current_time = time.time()
 
-        # Clean up expired entries periodically
-        if len(self.clients) > 1000:  # Cleanup threshold
-            self._cleanup_expired_entries(current_time)
+        with self._lock:
+            # Clean up expired entries periodically
+            if len(self.clients) > 1000:  # Cleanup threshold
+                self._cleanup_expired_entries(current_time)
 
-        # Initialize client data if not exists
-        if client_id not in self.clients:
-            self.clients[client_id] = {
-                "requests": [],
-                "first_request": current_time
-            }
+            # Initialize client data if not exists
+            if client_id not in self.clients:
+                self.clients[client_id] = {
+                    "requests": [],
+                    "first_request": current_time
+                }
 
-        client_data = self.clients[client_id]
+            client_data = self.clients[client_id]
 
-        # Remove requests older than the period
-        requests_list = client_data["requests"]
-        client_data["requests"] = [
-            req_time for req_time in requests_list
-            if current_time - req_time < self.period
-        ]
+            # Remove requests older than the period
+            requests_list = client_data["requests"]
+            client_data["requests"] = [
+                req_time for req_time in requests_list
+                if current_time - req_time < self.period
+            ]
 
-        # Check if rate limit exceeded
-        if len(client_data["requests"]) >= self.calls:
-            oldest_request = min(client_data["requests"])
+            # Check if rate limit exceeded
+            if len(client_data["requests"]) >= self.calls:
+                oldest_request = min(client_data["requests"])
+                reset_time = oldest_request + self.period
+                return True, 0, reset_time
+
+            # Add current request
+            client_data["requests"].append(current_time)
+
+            # Calculate remaining calls and reset time
+            remaining_calls = self.calls - len(client_data["requests"])
+            oldest_request = min(client_data["requests"]) if client_data["requests"] else current_time
             reset_time = oldest_request + self.period
-            return True, 0, reset_time
 
-        # Add current request
-        client_data["requests"].append(current_time)
+            return False, remaining_calls, reset_time
 
-        # Calculate remaining calls and reset time
-        remaining_calls = self.calls - len(client_data["requests"])
-        oldest_request = min(client_data["requests"]) if client_data["requests"] else current_time
-        reset_time = oldest_request + self.period
+    async def _is_rate_limited(self, client_id: str) -> tuple[bool, int, float]:
+        """Check if client is rate limited.
 
-        return False, remaining_calls, reset_time
+        Args:
+            client_id: Client identifier
+
+        Returns:
+            Tuple of (is_limited, remaining_calls, reset_time)
+        """
+        if self.redis_client:
+            return await self._is_rate_limited_redis(client_id)
+        else:
+            return self._is_rate_limited_memory(client_id)
 
     async def dispatch(self, request: Request, call_next: Any) -> Response:
         """Process request and apply rate limiting.
@@ -161,7 +240,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         client_id = self._get_client_identifier(request)
 
         # Check rate limit
-        is_limited, remaining_calls, reset_time = self._is_rate_limited(client_id)
+        is_limited, remaining_calls, reset_time = await self._is_rate_limited(client_id)
 
         if is_limited:
             logger.warning(

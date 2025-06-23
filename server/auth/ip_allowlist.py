@@ -18,7 +18,8 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
         self,
         app,
         allowed_ips: List[str],
-        bypass_paths: Optional[List[str]] = None
+        bypass_paths: Optional[List[str]] = None,
+        trusted_proxies: Optional[List[str]] = None
     ) -> None:
         """Initialize IP allowlist middleware.
 
@@ -26,14 +27,19 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
             app: FastAPI application
             allowed_ips: List of allowed IP addresses or CIDR blocks
             bypass_paths: List of paths that bypass IP filtering
+            trusted_proxies: List of trusted proxy IP addresses that can set X-Forwarded-For
         """
         super().__init__(app)
         self.allowed_networks = self._parse_ip_list(allowed_ips)
+        self.trusted_proxy_networks = self._parse_ip_list(trusted_proxies or [])
         self.bypass_paths = bypass_paths or ["/health", "/docs", "/openapi.json"]
 
         logger.info(f"IP allowlist initialized with {len(self.allowed_networks)} networks")
+        logger.info(f"Trusted proxies initialized with {len(self.trusted_proxy_networks)} networks")
         for network in self.allowed_networks:
             logger.debug(f"Allowed network: {network}")
+        for network in self.trusted_proxy_networks:
+            logger.debug(f"Trusted proxy network: {network}")
 
     def _parse_ip_list(
         self,
@@ -70,6 +76,24 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
 
         return networks
 
+    def _is_trusted_proxy(self, proxy_ip: str) -> bool:
+        """Check if IP is a trusted proxy.
+
+        Args:
+            proxy_ip: Proxy IP address
+
+        Returns:
+            True if IP is a trusted proxy
+        """
+        try:
+            proxy_addr = ipaddress.ip_address(proxy_ip)
+            for network in self.trusted_proxy_networks:
+                if proxy_addr in network:
+                    return True
+            return False
+        except ValueError:
+            return False
+
     def _get_client_ip(self, request: Request) -> str:
         """Get client IP address from request.
 
@@ -79,21 +103,29 @@ class IPAllowlistMiddleware(BaseHTTPMiddleware):
         Returns:
             Client IP address
         """
-        # Check for forwarded headers (when behind proxy/load balancer)
-        forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
-            # X-Forwarded-For can contain multiple IPs, get the first one
-            client_ip = forwarded_for.split(",")[0].strip()
-        else:
-            # Check for real IP header
+        # Get the immediate client IP (could be proxy or real client)
+        immediate_client = request.client.host if request.client else "unknown"
+
+        # Only trust forwarded headers if they come from trusted proxies
+        if self.trusted_proxy_networks and self._is_trusted_proxy(immediate_client):
+            # Check for forwarded headers from trusted proxy
+            forwarded_for = request.headers.get("X-Forwarded-For")
+            if forwarded_for:
+                # X-Forwarded-For can contain multiple IPs, get the first one (original client)
+                client_ip = forwarded_for.split(",")[0].strip()
+                logger.debug(f"Using X-Forwarded-For IP {client_ip} from trusted proxy {immediate_client}")
+                return client_ip
+
+            # Check for real IP header from trusted proxy
             real_ip = request.headers.get("X-Real-IP")
             if real_ip:
                 client_ip = real_ip.strip()
-            else:
-                # Fall back to direct client IP
-                client_ip = request.client.host if request.client else "unknown"
+                logger.debug(f"Using X-Real-IP {client_ip} from trusted proxy {immediate_client}")
+                return client_ip
 
-        return client_ip
+        # If no trusted proxy headers or not from trusted proxy, use immediate client IP
+        logger.debug(f"Using immediate client IP: {immediate_client}")
+        return immediate_client
 
     def _is_ip_allowed(self, client_ip: str) -> bool:
         """Check if client IP is in allowlist.

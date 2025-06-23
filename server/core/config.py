@@ -1,7 +1,8 @@
 """Configuration management for Zoho MCP Server."""
 
-
-from pydantic import Field
+import os
+import secrets
+from pydantic import Field, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,9 +23,40 @@ class Settings(BaseSettings):
     portal_id: str = Field(default="", alias="ZOHO_PORTAL_ID", description="Zoho Portal ID")
 
     # JWT Configuration
-    jwt_secret: str = Field(default="default_jwt_secret_key_32_chars_long", min_length=32, description="JWT Secret Key")
+    jwt_secret: str = Field(min_length=32, description="JWT Secret Key")
     jwt_algorithm: str = Field(default="HS256", description="JWT Algorithm")
     jwt_expire_hours: int = Field(default=12, ge=1, le=24, description="JWT Expiration Hours")
+
+    @field_validator('jwt_secret')
+    @classmethod
+    def validate_jwt_secret(cls, v):
+        """Validate JWT secret and generate secure default if not provided."""
+        if not v:
+            # Generate a cryptographically secure secret
+            generated_secret = secrets.token_urlsafe(32)
+            print(f"WARNING: JWT_SECRET not provided. Generated secure secret: {generated_secret}")
+            print("IMPORTANT: Save this secret to your .env file as JWT_SECRET=<secret>")
+            print("CRITICAL: Do not use the same secret across environments!")
+            return generated_secret
+
+        # Ensure minimum security requirements
+        if len(v) < 32:
+            raise ValueError("JWT secret must be at least 32 characters long")
+
+        # Check for common weak secrets
+        weak_secrets = [
+            "default_jwt_secret_key_32_chars_long",
+            "your-jwt-secret-key-here",
+            "changeme",
+            "secret",
+            "password",
+            "jwt_secret"
+        ]
+
+        if v.lower() in [w.lower() for w in weak_secrets]:
+            raise ValueError(f"JWT secret '{v}' is too weak. Use a cryptographically secure random string.")
+
+        return v
 
     # Redis Configuration
     redis_url: str = Field(default="redis://localhost:6379/0", description="Redis URL")
@@ -35,6 +67,10 @@ class Settings(BaseSettings):
     allowed_ips: str = Field(
         default="127.0.0.1,::1",
         description="Allowed IP addresses/CIDR blocks (comma-separated)"
+    )
+    trusted_proxies: str = Field(
+        default="",
+        description="Trusted proxy IP addresses/CIDR blocks (comma-separated) that can set X-Forwarded-For headers"
     )
     rate_limit_per_minute: int = Field(
         default=100,
@@ -79,6 +115,36 @@ class Settings(BaseSettings):
     # Webhook Configuration
     webhook_secret: str = Field(default="", description="Webhook Secret")
     enable_webhooks: bool = Field(default=True, description="Enable Webhooks")
+
+    @field_validator('webhook_secret')
+    @classmethod
+    def validate_webhook_secret(cls, v):
+        """Validate webhook secret configuration."""
+        if v and len(v) < 16:
+            raise ValueError("Webhook secret must be at least 16 characters long")
+
+        # Check for weak webhook secrets
+        if v:
+            weak_secrets = [
+                "webhook_secret",
+                "changeme",
+                "secret",
+                "password",
+                "your-webhook-secret",
+                "your_webhook_secret_here"
+            ]
+
+            if v.lower() in [w.lower() for w in weak_secrets]:
+                # In development, just warn instead of failing
+                import os
+                env = os.getenv('ENVIRONMENT', 'development').lower()
+                if env == 'development':
+                    print(f"WARNING: Webhook secret '{v}' is weak but allowed in development")
+                    return ""  # Return empty string to disable webhook verification
+                else:
+                    raise ValueError(f"Webhook secret '{v}' is too weak. Use a cryptographically secure random string.")
+
+        return v
 
     @property
     def is_production(self) -> bool:

@@ -18,7 +18,18 @@ class WebhookHandler:
     def __init__(self) -> None:
         """Initialize webhook handler."""
         self.webhook_secret = settings.webhook_secret
-        logger.info("Webhook handler initialized")
+        
+        # Ensure webhook secret is configured in production
+        if settings.is_production and not self.webhook_secret:
+            raise ValueError("Webhook secret must be configured in production environment")
+        
+        # Log appropriate message based on configuration
+        if self.webhook_secret:
+            logger.info("Webhook handler initialized with signature verification enabled")
+        else:
+            logger.warning("Webhook handler initialized WITHOUT signature verification - NOT SECURE for production")
+            if not settings.is_development:
+                logger.error("CRITICAL: Webhook secret not configured in non-development environment")
 
     def verify_signature(self, payload: bytes, signature: str) -> bool:
         """Verify webhook signature.
@@ -29,10 +40,26 @@ class WebhookHandler:
 
         Returns:
             True if signature is valid
+
+        Raises:
+            HTTPException: If webhook secret not configured or signature invalid
         """
+        # In development, allow skipping verification only if explicitly configured
         if not self.webhook_secret:
-            logger.warning("Webhook secret not configured, skipping verification")
-            return True
+            if settings.is_development and settings.environment.lower() == "development":
+                logger.warning("Webhook signature verification skipped in development mode")
+                return True
+            else:
+                logger.error("Webhook secret not configured - rejecting webhook")
+                raise HTTPException(
+                    status_code=500, 
+                    detail="Webhook verification not properly configured"
+                )
+
+        # Require signature header
+        if not signature:
+            logger.error("Missing webhook signature header")
+            raise HTTPException(status_code=401, detail="Missing signature header")
 
         try:
             expected_signature = hmac.new(
@@ -45,7 +72,14 @@ class WebhookHandler:
             if signature.startswith('sha256='):
                 signature = signature[7:]
 
-            return hmac.compare_digest(expected_signature, signature)
+            # Use constant-time comparison to prevent timing attacks
+            is_valid = hmac.compare_digest(expected_signature, signature)
+            
+            if not is_valid:
+                logger.warning("Invalid webhook signature received")
+            
+            return is_valid
+            
         except Exception as e:
             logger.error(f"Signature verification failed: {e}")
             return False
