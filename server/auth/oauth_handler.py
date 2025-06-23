@@ -101,15 +101,18 @@ class OAuthHandler:
 
             # 重要: 設定を再読み込み（ただし、完全な解決にはサーバー再起動が必要）
             try:
-                from server.core.config import settings
-                # 環境変数を再読み込み
-                os.environ.clear()
                 from dotenv import load_dotenv
-                load_dotenv()
+                from server.core.config import settings
+
+                # .envファイルから環境変数を再読み込み（上書きモード）
+                load_dotenv(override=True)
+
+                # 特定の設定のみ更新
+                os.environ['ZOHO_REFRESH_TOKEN'] = refresh_token
 
                 # 設定オブジェクトの更新を試行（制限あり）
                 settings.zoho_refresh_token = refresh_token
-                logger.info("Attempted to reload settings - server restart recommended")
+                logger.info("Updated environment variables safely - server restart recommended for full reload")
 
             except Exception as reload_error:
                 logger.warning(f"Settings reload failed: {reload_error} - server restart required")

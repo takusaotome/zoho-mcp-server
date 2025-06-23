@@ -3,8 +3,9 @@
 import logging
 from typing import Any, Dict, Optional
 
-from pydantic import BaseModel, ValidationError
+from pydantic import BaseModel, ValidationError as PydanticValidationError
 
+from server.core.exceptions import ValidationError, MCPError, ResourceNotFoundError
 from server.handlers.files import FileHandler
 from server.handlers.tasks import TaskHandler
 
@@ -144,7 +145,7 @@ class MCPHandler:
                     id=request.id
                 ).model_dump()
 
-        except ValidationError as e:
+        except PydanticValidationError as e:
             logger.error(f"Invalid request format: {e}")
             return MCPResponse(
                 error=MCPError.create_error(

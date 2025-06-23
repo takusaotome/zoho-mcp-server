@@ -3,23 +3,15 @@
 import asyncio
 import logging
 from typing import Any, Union, Optional
+from types import TracebackType
 
 import httpx
 
 from server.core.config import settings
+from server.core.exceptions import ZohoAPIError, ExternalAPIError, TemporaryError, TimeoutError
 from server.zoho.oauth_client import oauth_client
 
 logger = logging.getLogger(__name__)
-
-
-class ZohoAPIError(Exception):
-    """Custom exception for Zoho API errors."""
-
-    def __init__(self, message: str, status_code: int, response_data: Any = None):
-        self.message = message
-        self.status_code = status_code
-        self.response_data = response_data
-        super().__init__(self.message)
 
 
 class ZohoAPIClient:
@@ -32,8 +24,53 @@ class ZohoAPIClient:
         self.timeout = httpx.Timeout(30.0, connect=10.0)
         self.max_retries = 3
         self.retry_delays = [0.5, 1.0, 2.0]  # Exponential backoff
+        
+        # Connection pooling configuration
+        self.limits = httpx.Limits(
+            max_connections=100,      # Maximum number of connections to pool
+            max_keepalive_connections=20,  # Maximum number of keep-alive connections
+            keepalive_expiry=30.0     # Keep-alive expiry time in seconds
+        )
+        
+        # Shared HTTP client with connection pooling
+        self._client: Optional[httpx.AsyncClient] = None
 
         logger.info("Zoho API client initialized")
+
+    async def _get_client(self) -> httpx.AsyncClient:
+        """Get or create the shared HTTP client with connection pooling.
+
+        Returns:
+            Configured HTTP client instance
+        """
+        if self._client is None or self._client.is_closed:
+            self._client = httpx.AsyncClient(
+                timeout=self.timeout,
+                limits=self.limits,
+                follow_redirects=True,
+                headers={"User-Agent": "Zoho-MCP-Server/1.0"}
+            )
+            logger.debug("Created new HTTP client with connection pooling")
+        return self._client
+
+    async def close(self) -> None:
+        """Close the HTTP client and clean up connections."""
+        if self._client and not self._client.is_closed:
+            await self._client.aclose()
+            logger.debug("HTTP client closed")
+
+    async def __aenter__(self):
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(
+        self,
+        exc_type: Optional[type[BaseException]],
+        exc_val: Optional[BaseException],
+        exc_tb: Optional[TracebackType]
+    ) -> None:
+        """Async context manager exit."""
+        await self.close()
 
     async def _get_headers(self, use_workdrive: bool = False) -> dict[str, str]:
         """Get request headers with authentication token.
@@ -91,23 +128,29 @@ class ZohoAPIClient:
 
         while attempt < max_attempts:
             try:
-                async with httpx.AsyncClient(timeout=self.timeout) as client:
-                    logger.debug(f"Making {method} request to {url} (attempt {attempt + 1})")
+                client = await self._get_client()
+                logger.debug(f"Making {method} request to {url} (attempt {attempt + 1})")
 
-                    response = await client.request(
-                        method=method,
-                        url=url,
-                        headers=headers,
-                        **kwargs
-                    )
+                response = await client.request(
+                    method=method,
+                    url=url,
+                    headers=headers,
+                    **kwargs
+                )
 
-                    return await self._handle_response(response, attempt, max_attempts)
+                return await self._handle_response(response, attempt, max_attempts)
 
+            except httpx.TimeoutException as e:
+                attempt += 1
+                if attempt >= max_attempts:
+                    logger.error(f"Request timed out after {max_attempts} attempts: {e}")
+                    raise TimeoutError(f"Request timed out: {e}", timeout_duration=self.timeout.connect) from e
+                    
             except httpx.RequestError as e:
                 attempt += 1
                 if attempt >= max_attempts:
                     logger.error(f"Request failed after {max_attempts} attempts: {e}")
-                    raise ZohoAPIError(f"Network error: {e}", 0)
+                    raise ExternalAPIError(f"Network error: {e}", service="zoho_api") from e
 
                 # Wait before retry
                 await asyncio.sleep(self.retry_delays[min(attempt - 1, len(self.retry_delays) - 1)])
@@ -145,11 +188,11 @@ class ZohoAPIClient:
 
         # Handle rate limiting
         if response.status_code == 429:
+            retry_after = int(response.headers.get("Retry-After", 60))
             if attempt < max_attempts - 1:
-                retry_after = int(response.headers.get("Retry-After", 60))
                 logger.warning(f"Rate limited, waiting {retry_after} seconds")
                 await asyncio.sleep(retry_after)
-                raise Exception("Rate limited, retrying")
+                raise TemporaryError("Rate limited, retrying", retry_after=retry_after)
             else:
                 raise ZohoAPIError("Rate limit exceeded", 429, response.text)
 
@@ -160,7 +203,7 @@ class ZohoAPIClient:
                 # Force refresh token and retry once
                 await oauth_client.get_access_token(force_refresh=True)
                 if attempt < max_attempts - 1:
-                    raise Exception("Authentication failed, retrying with new token")
+                    raise TemporaryError("Authentication failed, retrying with new token")
             except Exception as e:
                 logger.error(f"Token refresh failed: {e}")
 
@@ -334,3 +377,7 @@ class ZohoAPIClient:
         except Exception as e:
             logger.error(f"Zoho API health check failed: {e}")
             return False
+
+
+# Create global instance
+zoho_client = ZohoAPIClient()

@@ -78,6 +78,18 @@ class Settings(BaseSettings):
         le=1000,
         description="Rate limit requests per minute"
     )
+    max_request_size: int = Field(
+        default=1024 * 1024,  # 1MB
+        ge=1024,  # Minimum 1KB
+        le=100 * 1024 * 1024,  # Maximum 100MB
+        description="Maximum request size in bytes"
+    )
+    max_upload_size: int = Field(
+        default=10 * 1024 * 1024,  # 10MB
+        ge=1024,  # Minimum 1KB
+        le=100 * 1024 * 1024,  # Maximum 100MB
+        description="Maximum file upload size in bytes"
+    )
 
     # Application Configuration
     environment: str = Field(default="development", description="Environment")

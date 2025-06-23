@@ -15,7 +15,7 @@ import httpx
 class E2ETestRunner:
     """Simple E2E test runner."""
 
-    def __init__(self, base_url: str = "http://localhost:8000"):
+    def __init__(self, base_url: str = "http://localhost:8001"):
         self.base_url = base_url
         self.test_results = []
         self.passed = 0
@@ -377,7 +377,7 @@ def main():
     os.environ["ZOHO_E2E_TESTS_ENABLED"] = "false"
 
     # Parse command line arguments
-    base_url = "http://localhost:8000"
+    base_url = "http://localhost:8001"
     if len(sys.argv) > 1:
         base_url = sys.argv[1]
 

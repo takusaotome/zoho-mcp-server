@@ -120,6 +120,7 @@ class TestZohoAPIClient:
         mock_response = Mock()
         mock_response.status_code = 429
         mock_response.text = "Rate limit exceeded"
+        mock_response.headers = {"Retry-After": "60"}
 
         with pytest.raises(ZohoAPIError) as exc_info:
             await client._handle_response(mock_response, 1, 2)  # final attempt

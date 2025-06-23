@@ -5,10 +5,11 @@ from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from typing import Optional
 
-from fastapi import Depends, FastAPI, HTTPException, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from server.auth.ip_allowlist import IPAllowlistMiddleware
 from server.auth.jwt_handler import TokenData, jwt_handler
@@ -28,6 +29,81 @@ logger = logging.getLogger(__name__)
 
 # Initialize security scheme
 security = HTTPBearer()
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Middleware to add security headers to all responses."""
+
+    async def dispatch(self, request: Request, call_next):
+        """Add security headers to response."""
+        response = await call_next(request)
+
+        # Security headers to prevent various attacks
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "1; mode=block"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=()"
+        
+        # Content Security Policy (adjust as needed for your frontend)
+        if settings.is_production:
+            response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self'; "
+                "script-src 'self' 'unsafe-inline'; "
+                "style-src 'self' 'unsafe-inline'; "
+                "img-src 'self' data: https:; "
+                "connect-src 'self' https://projectsapi.zoho.com https://workdrive.zoho.com"
+            )
+        else:
+            # More relaxed CSP for development
+            response.headers["Content-Security-Policy"] = (
+                "default-src 'self' 'unsafe-inline' 'unsafe-eval'; "
+                "connect-src 'self' https://projectsapi.zoho.com https://workdrive.zoho.com"
+            )
+
+        return response
+
+
+class RequestSizeLimitMiddleware(BaseHTTPMiddleware):
+    """Middleware to limit request body size."""
+
+    def __init__(self, app, max_size: int = 1024 * 1024):  # 1MB default
+        """Initialize request size limit middleware.
+        
+        Args:
+            app: FastAPI application
+            max_size: Maximum request size in bytes
+        """
+        super().__init__(app)
+        self.max_size = max_size
+
+    async def dispatch(self, request: Request, call_next):
+        """Check request size before processing."""
+        # Check Content-Length header
+        content_length = request.headers.get("Content-Length")
+        if content_length:
+            try:
+                size = int(content_length)
+                if size > self.max_size:
+                    return JSONResponse(
+                        status_code=413,
+                        content={
+                            "error": "Request Entity Too Large",
+                            "message": f"Request size {size} bytes exceeds limit of {self.max_size} bytes"
+                        }
+                    )
+            except ValueError:
+                # Invalid Content-Length header
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                        "error": "Bad Request",
+                        "message": "Invalid Content-Length header"
+                    }
+                )
+
+        return await call_next(request)
 
 
 @asynccontextmanager
@@ -64,7 +140,9 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # Add custom middleware
+    # Add custom middleware (order matters - security headers first)
+    app.add_middleware(SecurityHeadersMiddleware)
+    app.add_middleware(RequestSizeLimitMiddleware, max_size=settings.max_request_size)
     app.add_middleware(IPAllowlistMiddleware, allowed_ips=settings.allowed_ips.split(","))
     app.add_middleware(
         RateLimitMiddleware,
